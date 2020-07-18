@@ -28,13 +28,22 @@ function love.update(dt)
         for i,thing in pairs(ThingList) do
             -- if this thing's update function returns false, remove it from the list
             if not thing:update(1/60) then
-                ThingList[i] = nil
+                table.remove(ThingList, i)
             end
         end
     end
+end
 
-    Camera.x = ThePlayer.x - (love.graphics.getWidth()/2)*Camera.zoom
-    Camera.y = ThePlayer.y - (love.graphics.getHeight()/2)*Camera.zoom
+function love.mousepressed(x,y, button)
+    for i,thing in pairs(ThingList) do
+        if thing.mousepressed then
+            thing:mousepressed(x,y, button)
+        end
+    end
+end
+
+function IsInsideArena(x,y)
+    return x >= 0 and y >= 0 and x <= 16*64 and y <= 16*64
 end
 
 function love.draw()
@@ -43,17 +52,41 @@ function love.draw()
     love.graphics.scale(1/Camera.zoom,1/Camera.zoom)
     love.graphics.translate(math.floor(-1*Camera.x),math.floor(-1*Camera.y))
 
+    -- draw the ocean
+    love.graphics.setColor(0,0.25,0.6)
+    love.graphics.rectangle("fill", Camera.x,Camera.y, math.ceil(love.graphics.getWidth()*Camera.zoom)+4,math.ceil(love.graphics.getHeight()*Camera.zoom)+4)
+
     -- draw the arena
     love.graphics.setLineWidth(8)
     local tileSize = 64
     for x=1, 16 do
-        for y=1, 16 do
-            love.graphics.setColor(0.425,0.425,0.425)
-            love.graphics.rectangle("line", (x-1)*tileSize,(y-1)*tileSize, tileSize,tileSize)
-            love.graphics.setColor(0.5,0.5,0.5)
-            love.graphics.rectangle("fill", (x-1)*tileSize,(y-1)*tileSize, tileSize,tileSize)
+        for y=1, 20 do
+            if y < 17 then
+                love.graphics.setColor(0.425,0.425,0.425)
+                love.graphics.rectangle("line", (x-1)*tileSize,(y-1)*tileSize, tileSize,tileSize)
+                love.graphics.setColor(0.5,0.5,0.5)
+                love.graphics.rectangle("fill", (x-1)*tileSize,(y-1)*tileSize, tileSize,tileSize)
+            else
+                local alpha = Conversion(1,0, 17,20, y)
+                love.graphics.setColor(0.2,0.2,0.2, alpha)
+                love.graphics.rectangle("line", (x-1)*tileSize,(y-1)*tileSize, tileSize,tileSize/2)
+                love.graphics.setColor(0.3,0.3,0.3, alpha)
+                love.graphics.rectangle("fill", (x-1)*tileSize,(y-1)*tileSize, tileSize,tileSize/2)
+
+                local y = y+0.5
+                local alpha = Conversion(1,0, 17,20, y)
+                love.graphics.setColor(0.2,0.2,0.2, alpha)
+                love.graphics.rectangle("line", (x-1)*tileSize,(y-1)*tileSize, tileSize,tileSize/2)
+                love.graphics.setColor(0.3,0.3,0.3, alpha)
+                love.graphics.rectangle("fill", (x-1)*tileSize,(y-1)*tileSize, tileSize,tileSize/2)
+            end
         end
     end
+
+    -- make things "farther away" (bigger y value) go behind other things
+    table.sort(ThingList, function (a,b) 
+        return a.y < b.y
+    end)
 
     -- draw all things in the ThingList
     love.graphics.setLineWidth(5)

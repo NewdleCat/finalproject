@@ -10,6 +10,7 @@ function NewWizard(x,y)
     self.lastMoveDirection = 0
     self.health = 100
     self.mana = 100
+    self.name = "wizard"
 
     -- create my legs (just for looks)
     self.legs = {}
@@ -111,6 +112,7 @@ function NewWizardLeg(angle, radius, owner)
     self.owner = owner
     self.x = owner.x + math.cos(angle)*radius
     self.y = owner.y + math.sin(angle)*radius
+    self.name = "wizardleg"
 
     self.draw = function (self)
         local ox,oy = self.owner.x + math.cos(self.owner.lastMoveDirection + angle)*radius, self.owner.y + math.sin(self.owner.lastMoveDirection + angle)*radius
@@ -123,6 +125,7 @@ end
 function NewPlayer(x,y)
     -- this acts as inheritence, inheriting the stuff that the base Wizard class has
     local self = NewWizard(x,y)
+    self.name = "playerwizard"
 
     -- store the inherited update so that we can call it in our new update function
     self.parentUpdate = self.update
@@ -158,7 +161,51 @@ function NewPlayer(x,y)
         local mousex,mousey = love.mouse.getX()*Camera.zoom + Camera.x, love.mouse.getY()*Camera.zoom + Camera.y
         self.direction = math.pi + math.atan2((self.y-14) - mousey, self.x - mousex)
 
+        Camera.x = (self.x*6 + mousex)/7 - (love.graphics.getWidth()/2)*Camera.zoom
+        Camera.y = (self.y*6 + mousey)/7 - (love.graphics.getHeight()/2)*Camera.zoom
+
         return true
+    end
+
+    self.mousepressed = function (self, x,y, button)
+        AddToThingList(NewFireball(self.x,self.y+14, self.direction))
+    end
+
+    return self
+end
+
+function NewFireball(x,y, direction)
+    local self = {}
+    self.x = x
+    self.y = y
+    self.height = -20
+    self.direction = direction
+    self.airSpeed = -3
+    self.name = "fireball"
+
+    self.update = function (self, dt)
+        self.airSpeed = self.airSpeed + dt*3
+
+        local speed = 3
+        self.height = self.height + self.airSpeed
+        self.x = self.x + math.cos(self.direction)*speed
+        self.y = self.y + math.sin(self.direction)*speed
+
+        if self.height > 0 and IsInsideArena(self.x,self.y) then return false end
+        if self.height > -4 then return false end
+
+        return true
+    end
+
+    self.draw = function (self)
+        love.graphics.setColor(0.8,0.2,0)
+        local radius = 16
+        love.graphics.circle("fill", self.x,self.y + self.height - radius/2, radius)
+
+        if IsInsideArena(self.x,self.y) then
+            love.graphics.setColor(0.2,0.2,0.2, 0.75)
+            DrawOval(self.x,self.y, radius, 0.4)
+        end
     end
 
     return self
