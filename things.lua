@@ -220,10 +220,51 @@ function NewPlayer(x,y)
 
         if button == 2 and self.mana > 15 then
             self.mana = self.mana - 15
-            AddToThingList(NewZap(self.x,self.y, self.direction, self))
-            AddToThingList(NewZap(self.x,self.y, self.direction + math.pi/10, self))
-            AddToThingList(NewZap(self.x,self.y, self.direction - math.pi/10, self))
+            --AddToThingList(NewZap(self.x,self.y, self.direction, self))
+            --AddToThingList(NewZap(self.x,self.y, self.direction + math.pi/10, self))
+            --AddToThingList(NewZap(self.x,self.y, self.direction - math.pi/10, self))
+            AddToThingList(NewHealAreaOfEffect(self.x, self.y))
         end
+    end
+
+    return self
+end
+
+function NewHealAreaOfEffect(x,y)
+    local self = {}
+    self.timer = 0
+    self.x = x
+    self.realy = y
+    self.y = -10000 -- just so it doesnt layer on top of anything
+    self.radius = 64
+
+    -- love.audio.stop(Sounds.boom)
+    -- love.audio.play(Sounds.boom)
+
+    self.update = function (self, dt)
+        -- die after 10 seconds
+        self.timer = self.timer + dt
+
+        -- damage anything in my radius
+        for i,v in pairs(ThingList) do
+            if v.living and Distance(v.x,v.y, self.x,self.realy) <= self.radius then
+                if v.health < 100 then
+                    v.health = v.health + 0.5
+                end
+            end
+        end
+
+        return self.timer < 10
+    end
+
+    self.draw = function (self)
+        -- set a stencil so the circle can't bleed outside of the area of the arena
+        love.graphics.setStencilTest("greater", 0)
+        love.graphics.setColor(0.15,0.5,0, Conversion(0.5,0, 9,10, self.timer))
+        love.graphics.circle("fill", self.x,self.realy, self.radius)
+        love.graphics.setColor(0.2,0.8,0, Conversion(1,0, 9,10, self.timer))
+        love.graphics.circle("line", self.x,self.realy, self.radius)
+        love.graphics.setStencilTest()
     end
 
     return self
