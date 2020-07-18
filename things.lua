@@ -220,9 +220,9 @@ function NewPlayer(x,y)
 
         if button == 2 and self.mana > 15 then
             self.mana = self.mana - 15
-            AddToThingList(NewZap(self.x,self.y+14, self.direction, self))
-            AddToThingList(NewZap(self.x,self.y+14, self.direction + math.pi/10, self))
-            AddToThingList(NewZap(self.x,self.y+14, self.direction - math.pi/10, self))
+            AddToThingList(NewZap(self.x,self.y, self.direction, self))
+            AddToThingList(NewZap(self.x,self.y, self.direction + math.pi/10, self))
+            AddToThingList(NewZap(self.x,self.y, self.direction - math.pi/10, self))
         end
     end
 
@@ -339,7 +339,7 @@ function NewZap(x,y, direction, owner)
 
         -- damage anything in my radius
         for i,v in pairs(ThingList) do
-            if v.living and Distance(v.x,v.y, self.x,self.y) <= 10 and v ~= self.owner then
+            if v.living and Distance(v.x,v.y, self.x,self.y) <= 30 and v ~= self.owner then
                 v.health = v.health - 20
                 return false
             end
