@@ -38,3 +38,20 @@ function love.draw()
         thing:draw()
     end
 end
+
+function DrawOval(x,y, r, squish)
+    love.graphics.push()
+    love.graphics.translate(x,y)
+    love.graphics.scale(1,squish)
+    love.graphics.circle("fill", 0,0, r)
+    love.graphics.pop()
+end
+
+-- a bunch of useful math functions for common tasks
+function Lerp(a,b,t) return (1-t)*a + t*b end
+function DeltaLerp(a,b,t, dt) return Lerp(a,b, 1 - t^(dt)) end
+function Conversion(a,b, p1,p2, t) return Lerp(a,b, Clamp((t-p1)/(p2-p1), 0,1)) end
+function TableConversion(a,b, p1,p2, t) local ret = {} for i,v in pairs(a) do ret[i] = Conversion(a[i],b[i], p1,p2, t) end return ret end
+function Clamp(n, min,max) return math.max(math.min(n, max),min) end
+function Distance(x1,y1, x2,y2) return ((x2-x1)^2+(y2-y1)^2)^0.5 end
+function GetAngle(x1,y1, x2,y2) return math.atan2(y2-y1, x2-x1) end
