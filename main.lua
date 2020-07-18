@@ -10,6 +10,12 @@ function love.load()
     ThingList = {}
     AddToThingList(NewWizard(100,100))
     ThePlayer = AddToThingList(NewPlayer(500,500))
+
+    Sounds = {
+        fireball = love.audio.newSource("fireball.mp3", "static"),
+        boom = love.audio.newSource("boom.mp3", "static"),
+        death = love.audio.newSource("death.mp3", "static"),
+    }
 end
 
 function AddToThingList(thing)
@@ -28,6 +34,12 @@ function love.update(dt)
         for i,thing in pairs(ThingList) do
             -- if this thing's update function returns false, remove it from the list
             if not thing:update(1/60) then
+                -- if this thing has a death function, do it
+                if thing.onDeath then
+                    thing:onDeath()
+                end
+
+                -- remove it from the list of things to be updated and drawn
                 table.remove(ThingList, i)
             end
         end
@@ -35,6 +47,7 @@ function love.update(dt)
 end
 
 function love.mousepressed(x,y, button)
+    -- relay this event to all things that exist
     for i,thing in pairs(ThingList) do
         if thing.mousepressed then
             thing:mousepressed(x,y, button)
@@ -86,7 +99,7 @@ function love.draw()
     love.graphics.stencil(function () love.graphics.rectangle("fill", 0,0, 16*tileSize,16*tileSize) end, "replace", 1)
 
     -- make things "farther away" (bigger y value) go behind other things
-    table.sort(ThingList, function (a,b) 
+    table.sort(ThingList, function (a,b)
         return a.y < b.y
     end)
 

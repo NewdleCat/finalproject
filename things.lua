@@ -59,6 +59,11 @@ function NewWizard(x,y)
         return self.health > 0
     end
 
+    self.onDeath = function (self)
+        love.audio.stop(Sounds.death)
+        love.audio.play(Sounds.death)
+    end
+
     self.drawArm = function (self)
         love.graphics.setColor(1,1,1)
         local internalradius = 30
@@ -178,6 +183,7 @@ function NewPlayer(x,y)
         self.xSpeed = self.xSpeed * friction
         self.ySpeed = self.ySpeed * friction
 
+        -- collide with the edges of the arena
         if not IsInsideArena(self.x + self.xSpeed, self.y) then
             self.xSpeed = 0
         end
@@ -197,9 +203,12 @@ function NewPlayer(x,y)
         local mousex,mousey = love.mouse.getX()*Camera.zoom + Camera.x, love.mouse.getY()*Camera.zoom + Camera.y
         self.direction = math.pi + math.atan2((self.y-14) - mousey, self.x - mousex)
 
+        -- center the camera on me
+        -- but bias it in the direction of the mouse
         Camera.x = (self.x*6 + mousex)/7 - (love.graphics.getWidth()/2)*Camera.zoom
         Camera.y = (self.y*6 + mousey)/7 - (love.graphics.getHeight()/2)*Camera.zoom
 
+        -- only stay alive while i have health remaining
         return self.health > 0
     end
 
@@ -221,6 +230,9 @@ function NewFireball(x,y, direction)
     self.direction = direction
     self.airSpeed = -3
     self.name = "fireball"
+
+    love.audio.stop(Sounds.fireball)
+    love.audio.play(Sounds.fireball)
 
     self.update = function (self, dt)
         self.airSpeed = self.airSpeed + dt*3
@@ -248,6 +260,7 @@ function NewFireball(x,y, direction)
         local radius = 16
         love.graphics.circle("fill", self.x,self.y + self.height - radius/2, radius)
 
+        -- only draw shadow if inside arena
         if IsInsideArena(self.x,self.y) then
             love.graphics.setColor(0.2,0.2,0.2, 0.75)
             DrawOval(self.x,self.y, radius, 0.4)
@@ -264,6 +277,9 @@ function NewFireballAreaOfEffect(x,y)
     self.realy = y
     self.y = -10000 -- just so it doesnt layer on top of anything
     self.radius = 128
+
+    love.audio.stop(Sounds.boom)
+    love.audio.play(Sounds.boom)
 
     self.update = function (self, dt)
         -- die after 10 seconds
