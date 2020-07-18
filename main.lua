@@ -4,9 +4,11 @@ function love.load()
     love.window.setMode(1600, 1600*9/16, {vsync=true})
     UpdateController = 0
 
+    Camera = {x=0,y=0, zoom=1/0.8}
+
     -- ThingList is the list of all currently active things in the game
     ThingList = {}
-    --AddToThingList(NewWizard(100,100))
+    AddToThingList(NewWizard(100,100))
     ThePlayer = AddToThingList(NewPlayer(500,500))
 end
 
@@ -30,13 +32,37 @@ function love.update(dt)
             end
         end
     end
+
+    Camera.x = ThePlayer.x - (love.graphics.getWidth()/2)*Camera.zoom
+    Camera.y = ThePlayer.y - (love.graphics.getHeight()/2)*Camera.zoom
 end
 
 function love.draw()
+    -- move and scale the game according to the camera
+    love.graphics.push()
+    love.graphics.scale(1/Camera.zoom,1/Camera.zoom)
+    love.graphics.translate(math.floor(-1*Camera.x),math.floor(-1*Camera.y))
+
+    -- draw the arena
+    love.graphics.setLineWidth(8)
+    local tileSize = 64
+    for x=1, 16 do
+        for y=1, 16 do
+            love.graphics.setColor(0.425,0.425,0.425)
+            love.graphics.rectangle("line", (x-1)*tileSize,(y-1)*tileSize, tileSize,tileSize)
+            love.graphics.setColor(0.5,0.5,0.5)
+            love.graphics.rectangle("fill", (x-1)*tileSize,(y-1)*tileSize, tileSize,tileSize)
+        end
+    end
+
     -- draw all things in the ThingList
+    love.graphics.setLineWidth(5)
     for i,thing in pairs(ThingList) do
+        love.graphics.setColor(1,1,1)
         thing:draw()
     end
+
+    love.graphics.pop()
 end
 
 function DrawOval(x,y, r, squish)
