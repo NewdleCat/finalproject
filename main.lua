@@ -16,6 +16,27 @@ function love.load()
         boom = love.audio.newSource("boom.mp3", "static"),
         death = love.audio.newSource("death.mp3", "static"),
     }
+
+    Timer = 0
+    OceanShader = love.graphics.newShader [[
+        uniform float timer;
+        uniform float camerax;
+        uniform float cameray;
+
+        vec4 effect( vec4 color, Image tex, vec2 texture_coords, vec2 screen_coords )
+        {
+            vec4 texcolor = Texel(tex, texture_coords);
+
+            float wave = sin((camerax + screen_coords.x)/24 - timer) + sin((cameray + screen_coords.y + sin((camerax + screen_coords.x)/40)*15)/24 - timer*0.6);
+
+            if (wave < 0.1 && wave > -0.1)
+            {
+                float brightness = 1.4;
+                return color * vec4(brightness, brightness, brightness, 1);
+            }
+            return texcolor * color;
+        }
+    ]]
 end
 
 function AddToThingList(thing)
@@ -26,9 +47,14 @@ end
 function love.update(dt)
     -- control the update cycle to always run at 60 times per second
     -- we could deltatime every physical interaction in the game, but eh fuck it
+    -- this also guarantees that the AI always has the same simulation time between evaluations
     UpdateController = UpdateController + dt
+
     while UpdateController > 1/60 do
         UpdateController = UpdateController - 1/60
+
+        -- a global timer that's used for shader code
+        Timer = Timer + 1/60
 
         -- update all things in the ThingList
         for i,thing in pairs(ThingList) do
@@ -66,8 +92,13 @@ function love.draw()
     love.graphics.translate(math.floor(-1*Camera.x),math.floor(-1*Camera.y))
 
     -- draw the ocean
+    OceanShader:send("timer", Timer)
+    OceanShader:send("camerax", Camera.x/Camera.zoom)
+    OceanShader:send("cameray", Camera.y/Camera.zoom)
+    love.graphics.setShader(OceanShader)
     love.graphics.setColor(0,0.25,0.6)
     love.graphics.rectangle("fill", Camera.x,Camera.y, math.ceil(love.graphics.getWidth()*Camera.zoom)+4,math.ceil(love.graphics.getHeight()*Camera.zoom)+4)
+    love.graphics.setShader()
 
     -- draw the arena
     love.graphics.setLineWidth(8)
