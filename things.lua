@@ -217,6 +217,13 @@ function NewPlayer(x,y)
             self.mana = self.mana - 35
             AddToThingList(NewFireball(self.x,self.y+14, self.direction))
         end
+
+        if button == 2 and self.mana > 15 then
+            self.mana = self.mana - 15
+            AddToThingList(NewZap(self.x,self.y+14, self.direction, self))
+            AddToThingList(NewZap(self.x,self.y+14, self.direction + math.pi/10, self))
+            AddToThingList(NewZap(self.x,self.y+14, self.direction - math.pi/10, self))
+        end
     end
 
     return self
@@ -303,6 +310,56 @@ function NewFireballAreaOfEffect(x,y)
         love.graphics.setColor(0.8,0.2,0, Conversion(1,0, 9,10, self.timer))
         love.graphics.circle("line", self.x,self.realy, self.radius)
         love.graphics.setStencilTest()
+    end
+
+    return self
+end
+
+function NewZap(x,y, direction, owner)
+    local self = {}
+    self.x = x
+    self.y = y
+    self.trail = {}
+    self.direction = direction
+    self.timer = 0
+    self.owner = owner
+
+    love.audio.stop(Sounds.zap)
+    love.audio.play(Sounds.zap)
+
+    self.update = function (self, dt)
+        self.timer = self.timer + dt
+
+        local randomness = 16
+        table.insert(self.trail, {self.x + love.math.random()*randomness - randomness/2, self.y + love.math.random()*randomness - randomness/2})
+
+        local speed = 8
+        self.x = self.x + math.cos(self.direction)*speed
+        self.y = self.y + math.sin(self.direction)*speed
+
+        -- damage anything in my radius
+        for i,v in pairs(ThingList) do
+            if v.living and Distance(v.x,v.y, self.x,self.y) <= 10 and v ~= self.owner then
+                v.health = v.health - 20
+                return false
+            end
+        end
+
+        return self.timer < 0.75
+    end
+
+    self.draw = function (self)
+        local pastWidth = love.graphics.getLineWidth()
+        love.graphics.setColor(0,0,0)
+        love.graphics.setLineWidth(2)
+        --love.graphics.circle("fill", self.x,self.y, 16)
+        for i=math.max(1, #self.trail-10), #self.trail-1 do
+            local this = self.trail[i]
+            local next = self.trail[i+1]
+
+            love.graphics.line(this[1], this[2], next[1], next[2])
+        end
+        love.graphics.setLineWidth(pastWidth)
     end
 
     return self

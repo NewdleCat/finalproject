@@ -15,6 +15,7 @@ function love.load()
         fireball = love.audio.newSource("fireball.mp3", "static"),
         boom = love.audio.newSource("boom.mp3", "static"),
         death = love.audio.newSource("death.mp3", "static"),
+        zap = love.audio.newSource("zap.mp3", "static"),
     }
 
     Timer = 0
@@ -22,12 +23,13 @@ function love.load()
         uniform float timer;
         uniform float camerax;
         uniform float cameray;
+        uniform float zoom;
 
         vec4 effect( vec4 color, Image tex, vec2 texture_coords, vec2 screen_coords )
         {
             vec4 texcolor = Texel(tex, texture_coords);
 
-            float wave = sin((camerax + screen_coords.x)/24 - timer) + sin((cameray + screen_coords.y + sin((camerax + screen_coords.x)/40)*15)/24 - timer*0.6);
+            float wave = sin((camerax + screen_coords.x*zoom)/24 - timer/zoom) + sin((cameray + screen_coords.y*zoom + sin((camerax + screen_coords.x*zoom)/40)*15)/24 - timer*0.6/zoom);
 
             if (wave < 0.1 && wave > -0.1)
             {
@@ -81,6 +83,10 @@ function love.mousepressed(x,y, button)
     end
 end
 
+function love.wheelmoved(x,y)
+    Camera.zoom = Camera.zoom - y/10
+end
+
 function IsInsideArena(x,y)
     return x >= 0 and y >= 0 and x <= 16*64 and y <= 16*64
 end
@@ -93,8 +99,9 @@ function love.draw()
 
     -- draw the ocean
     OceanShader:send("timer", Timer)
-    OceanShader:send("camerax", Camera.x/Camera.zoom)
-    OceanShader:send("cameray", Camera.y/Camera.zoom)
+    OceanShader:send("camerax", Camera.x)
+    OceanShader:send("cameray", Camera.y)
+    OceanShader:send("zoom", Camera.zoom)
     love.graphics.setShader(OceanShader)
     love.graphics.setColor(0,0.25,0.6)
     love.graphics.rectangle("fill", Camera.x,Camera.y, math.ceil(love.graphics.getWidth()*Camera.zoom)+4,math.ceil(love.graphics.getHeight()*Camera.zoom)+4)
