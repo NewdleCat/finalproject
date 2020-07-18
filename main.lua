@@ -83,6 +83,8 @@ function love.draw()
         end
     end
 
+    love.graphics.stencil(function () love.graphics.rectangle("fill", 0,0, 16*tileSize,16*tileSize) end, "replace", 1)
+
     -- make things "farther away" (bigger y value) go behind other things
     table.sort(ThingList, function (a,b) 
         return a.y < b.y

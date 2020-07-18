@@ -11,6 +11,7 @@ function NewWizard(x,y)
     self.health = 100
     self.mana = 100
     self.name = "wizard"
+    self.living = true
 
     -- create my legs (just for looks)
     self.legs = {}
@@ -48,9 +49,14 @@ function NewWizard(x,y)
             furthestLeg.x,furthestLeg.y = self.x + math.cos(angle)*rad, self.y + math.sin(angle)*rad
         end
 
+        -- save the radian angle of the last direction i moved for walking animation purposes
         self.lastMoveDirection = GetAngle(0,0, self.xSpeed,self.ySpeed)
 
-        return true
+        -- slowly regenerate mana, but don't go past 100
+        self.mana = math.min(self.mana + 0.1, 100)
+
+        -- die if out of health
+        return self.health > 0
     end
 
     self.drawArm = function (self)
@@ -100,6 +106,17 @@ function NewWizard(x,y)
             -- i guess my arm wasn't behind me, draw it on top of evething else
             self:drawArm()
         end
+
+        -- draw health bar
+        local width = 120
+        love.graphics.setColor(1,0,0.2)
+        love.graphics.rectangle("fill", self.x -width/2, self.y - 100, width*(self.health/100), 10)
+        love.graphics.setColor(0.1,0.1,0.1, 0.5)
+        love.graphics.rectangle("fill", self.x -width/2 + width, self.y - 100, -1*width*(1 - self.health/100), 10)
+        love.graphics.setColor(0.2,0,1)
+        love.graphics.rectangle("fill", self.x -width/2, self.y - 100 + 16, width*(self.mana/100), 10)
+        love.graphics.setColor(0.1,0.1,0.1, 0.5)
+        love.graphics.rectangle("fill", self.x -width/2 + width, self.y - 100 + 16, -1*width*(1 - self.mana/100), 10)
     end
 
     return self
@@ -168,7 +185,10 @@ function NewPlayer(x,y)
     end
 
     self.mousepressed = function (self, x,y, button)
-        AddToThingList(NewFireball(self.x,self.y+14, self.direction))
+        if button == 1 and self.mana > 35 then
+            self.mana = self.mana - 35
+            AddToThingList(NewFireball(self.x,self.y+14, self.direction))
+        end
     end
 
     return self
@@ -191,8 +211,15 @@ function NewFireball(x,y, direction)
         self.x = self.x + math.cos(self.direction)*speed
         self.y = self.y + math.sin(self.direction)*speed
 
-        if self.height > 0 and IsInsideArena(self.x,self.y) then return false end
-        if self.height > -4 then return false end
+        if self.height > 0 and IsInsideArena(self.x,self.y) then
+            -- landed inside arena, explode
+            AddToThingList(NewFireballAreaOfEffect(self.x,self.y))
+            return false
+        end
+        if not IsInsideArena(self.x,self.y) then
+            -- landed outside arena, don't explode
+            return false
+        end
 
         return true
     end
@@ -206,6 +233,41 @@ function NewFireball(x,y, direction)
             love.graphics.setColor(0.2,0.2,0.2, 0.75)
             DrawOval(self.x,self.y, radius, 0.4)
         end
+    end
+
+    return self
+end
+
+function NewFireballAreaOfEffect(x,y)
+    local self = {}
+    self.timer = 0
+    self.x = x
+    self.realy = y
+    self.y = -10000 -- just so it doesnt layer on top of anything
+    self.radius = 128
+
+    self.update = function (self, dt)
+        -- die after 10 seconds
+        self.timer = self.timer + dt
+
+        -- damage anything in my radius
+        for i,v in pairs(ThingList) do
+            if v.living and Distance(v.x,v.y, self.x,self.realy) <= self.radius then
+                v.health = v.health - 0.5
+            end
+        end
+
+        return self.timer < 10
+    end
+
+    self.draw = function (self)
+        -- set a stencil so the circle can't bleed outside of the area of the arena
+        love.graphics.setStencilTest("greater", 0)
+        love.graphics.setColor(0.5,0.15,0, Conversion(0.5,0, 9,10, self.timer))
+        love.graphics.circle("fill", self.x,self.realy, self.radius)
+        love.graphics.setColor(0.8,0.2,0, Conversion(1,0, 9,10, self.timer))
+        love.graphics.circle("line", self.x,self.realy, self.radius)
+        love.graphics.setStencilTest()
     end
 
     return self
