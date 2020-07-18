@@ -236,7 +236,7 @@ function NewHealAreaOfEffect(x,y)
     self.x = x
     self.realy = y
     self.y = -10000 -- just so it doesnt layer on top of anything
-    self.radius = 128
+    self.radius = 64
 
     -- love.audio.stop(Sounds.boom)
     -- love.audio.play(Sounds.boom)
