@@ -6,7 +6,7 @@ function love.load()
 
     -- ThingList is the list of all currently active things in the game
     ThingList = {}
-    AddToThingList(NewWizard(100,100))
+    --AddToThingList(NewWizard(100,100))
     ThePlayer = AddToThingList(NewPlayer(500,500))
 end
 

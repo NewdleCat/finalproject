@@ -13,23 +13,31 @@ function NewWizard(x,y)
 
     -- create my legs (just for looks)
     self.legs = {}
-    self.legs[1] = NewWizardLeg(-7, self)
-    self.legs[2] = NewWizardLeg(7, self)
-    self.nextLeg = 2
+    self.legs[1] = NewWizardLeg(math.pi/-4, 7, self)
+    self.legs[2] = NewWizardLeg(math.pi/4, 7, self)
 
     self.update = function (self, dt)
         -- make my legs be attached to me
-        for i,leg in pairs(self.legs) do
-            leg:tryToMove(dt)
+        local centerOfBalance = {(self.legs[1].x + self.legs[2].x)/2, (self.legs[1].y + self.legs[2].y)/2}
+        local nearestLeg = self.legs[2]
+        local furthestLeg = self.legs[1]
+        if Distance(self.legs[1].x, self.legs[1].y, self.x,self.y) < Distance(self.legs[2].x,self.legs[2].y, self.x,self.y) then
+            nearestLeg = self.legs[1]
+            furthestLeg = self.legs[2]
         end
 
-        self.legs[1].checkPoint[1], self.legs[1].checkPoint[2] = self.x, self.y
-        local lookAhead = 8
-        self.legs[2].checkPoint[1], self.legs[2].checkPoint[2] = self.x + math.cos(self.lastMoveDirection)*lookAhead, self.y + math.sin(self.lastMoveDirection)*lookAhead
-
-        if self.xSpeed ~= 0 or self.ySpeed ~= 0 then
-            self.lastMoveDirection = GetAngle(0,0, self.xSpeed,self.ySpeed)
+        if Distance(self.x,self.y, centerOfBalance[1],centerOfBalance[2]) > 8 then
+            local angle = self.lastMoveDirection--GetAngle(nearestLeg.x,nearestLeg.y, self.x,self.y)
+            if furthestLeg == self.legs[2] then
+                angle = angle + math.pi/8
+            else
+                angle = angle - math.pi/8
+            end
+            local rad = 20
+            furthestLeg.x,furthestLeg.y = self.x + math.cos(angle)*rad, self.y + math.sin(angle)*rad
         end
+
+        self.lastMoveDirection = GetAngle(0,0, self.xSpeed,self.ySpeed)
 
         return true
     end
@@ -68,30 +76,18 @@ function NewWizard(x,y)
     return self
 end
 
-function NewWizardLeg(offset, owner)
+function NewWizardLeg(angle, radius, owner)
     local self = {}
-    self.offset = offset
+    self.angle = angle
+    self.radius = radius
     self.owner = owner
-    self.checkPoint = {owner.x, owner.y}
-    self.groundPoint = {owner.x, owner.y}
-
-    self.tryToMove = function (self, dt)
-        if Distance(self.groundPoint[1],self.groundPoint[2], self.checkPoint[1],self.checkPoint[2]) > 16 then
-            self:step()
-            return true
-        end
-
-        return false
-    end
-
-    self.step = function (self)
-        local stepLength = 16
-        self.groundPoint[1], self.groundPoint[2] = self.owner.x + math.cos(self.owner.lastMoveDirection)*stepLength, self.owner.y + math.sin(self.owner.lastMoveDirection)*stepLength
-    end
+    self.x = owner.x + math.cos(angle)*radius
+    self.y = owner.y + math.sin(angle)*radius
 
     self.draw = function (self)
         love.graphics.setColor(1,1,1)
-        love.graphics.line(self.owner.x + self.offset,self.owner.y, self.groundPoint[1] + self.offset, self.groundPoint[2]+30)
+        local ox,oy = self.owner.x + math.cos(self.owner.lastMoveDirection + angle)*radius, self.owner.y + math.sin(self.owner.lastMoveDirection + angle)*radius
+        love.graphics.line(ox,oy, self.x, self.y+24)
     end
 
     return self
