@@ -13,30 +13,22 @@ function NewWizard(x,y)
 
     -- create my legs (just for looks)
     self.legs = {}
-    self.legs[1] = AddToThingList(NewWizardLeg(-7, self))
-    self.legs[2] = AddToThingList(NewWizardLeg(7, self))
-    self.hasStepped = false
+    self.legs[1] = NewWizardLeg(-7, self)
+    self.legs[2] = NewWizardLeg(7, self)
+    self.nextLeg = 2
 
     self.update = function (self, dt)
         -- make my legs be attached to me
         for i,leg in pairs(self.legs) do
-            leg.attachPoint = {self.x, self.y}
+            leg:tryToMove(dt)
         end
 
-        if self.legs[1].groundPoint and self.legs[2].groundPoint then
-            if Distance(self.legs[1].groundPoint[1], self.legs[1].groundPoint[2], self.x,self.y) < Distance(self.legs[2].groundPoint[1], self.legs[2].groundPoint[2], self.x,self.y) then
-                self.legs[1]:update(dt)
-            else
-                self.legs[2]:update(dt)
-            end
-        end
+        self.legs[1].checkPoint[1], self.legs[1].checkPoint[2] = self.x, self.y
+        local lookAhead = 8
+        self.legs[2].checkPoint[1], self.legs[2].checkPoint[2] = self.x + math.cos(self.lastMoveDirection)*lookAhead, self.y + math.sin(self.lastMoveDirection)*lookAhead
 
         if self.xSpeed ~= 0 or self.ySpeed ~= 0 then
             self.lastMoveDirection = GetAngle(0,0, self.xSpeed,self.ySpeed)
-            if not self.hasStepped then
-                self.legs[1]:step()
-            end
-            self.hasStepped = true
         end
 
         return true
@@ -44,6 +36,10 @@ function NewWizard(x,y)
 
     self.draw = function (self)
         local centerx, centery = self.x, self.y - 20
+
+        for i,leg in pairs(self.legs) do
+            leg:draw()
+        end
 
         -- draw cloak
         love.graphics.setColor(0.5,0.5,0.5)
@@ -76,30 +72,26 @@ function NewWizardLeg(offset, owner)
     local self = {}
     self.offset = offset
     self.owner = owner
+    self.checkPoint = {owner.x, owner.y}
+    self.groundPoint = {owner.x, owner.y}
 
-    self.update = function (self, dt)
-        if self.attachPoint then
-            if not self.groundPoint then
-                self.groundPoint = {self.attachPoint[1], self.attachPoint[2]}
-            end
-
-            if Distance(self.groundPoint[1],self.groundPoint[2], self.attachPoint[1],self.attachPoint[2]) > 16 then
-                self:step()
-            end
+    self.tryToMove = function (self, dt)
+        if Distance(self.groundPoint[1],self.groundPoint[2], self.checkPoint[1],self.checkPoint[2]) > 16 then
+            self:step()
+            return true
         end
 
-        return true
+        return false
     end
 
     self.step = function (self)
-        self.groundPoint = {self.attachPoint[1] + math.cos(self.owner.lastMoveDirection)*16, self.attachPoint[2] + math.sin(self.owner.lastMoveDirection)*16}
+        local stepLength = 16
+        self.groundPoint[1], self.groundPoint[2] = self.owner.x + math.cos(self.owner.lastMoveDirection)*stepLength, self.owner.y + math.sin(self.owner.lastMoveDirection)*stepLength
     end
 
     self.draw = function (self)
-        if self.attachPoint and self.groundPoint then
-            love.graphics.setColor(1,1,1)
-            love.graphics.line(self.attachPoint[1] + self.offset,self.attachPoint[2], self.groundPoint[1] + self.offset, self.groundPoint[2]+30)
-        end
+        love.graphics.setColor(1,1,1)
+        love.graphics.line(self.owner.x + self.offset,self.owner.y, self.groundPoint[1] + self.offset, self.groundPoint[2]+30)
     end
 
     return self
