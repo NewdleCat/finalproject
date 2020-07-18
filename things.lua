@@ -150,25 +150,44 @@ function NewPlayer(x,y)
         self:parentUpdate(dt)
 
         local walkSpeed = 0.8
+        local moveVector = {0,0}
 
         -- walk according to keyboard input
         if love.keyboard.isDown("w") then
-            self.ySpeed = self.ySpeed - walkSpeed
+            moveVector[2] = -1
         end
         if love.keyboard.isDown("s") then
-            self.ySpeed = self.ySpeed + walkSpeed
+            moveVector[2] = 1
         end
         if love.keyboard.isDown("a") then
-            self.xSpeed = self.xSpeed - walkSpeed
+            moveVector[1] = -1
         end
         if love.keyboard.isDown("d") then
-            self.xSpeed = self.xSpeed + walkSpeed
+            moveVector[1] = 1
+        end
+
+        -- do some trigonometry here so that moving in diagonals doesn't make you go faster
+        if moveVector[1] ~= 0 or moveVector[2] ~= 0 then
+            local moveAngle = GetAngle(0,0, moveVector[1],moveVector[2])
+            self.xSpeed = self.xSpeed + math.cos(moveAngle)*walkSpeed
+            self.ySpeed = self.ySpeed + math.sin(moveAngle)*walkSpeed
         end
 
         -- apply some friction to be able to stop walking
         local friction = 0.8
         self.xSpeed = self.xSpeed * friction
         self.ySpeed = self.ySpeed * friction
+
+        if not IsInsideArena(self.x + self.xSpeed, self.y) then
+            self.xSpeed = 0
+        end
+        if not IsInsideArena(self.x, self.y + self.ySpeed) then
+            self.ySpeed = 0
+        end
+        if not IsInsideArena(self.x + self.xSpeed, self.y + self.ySpeed) then
+            self.xSpeed = 0
+            self.ySpeed = 0
+        end
 
         -- integrate velocity into position
         self.x = self.x + self.xSpeed
@@ -181,7 +200,7 @@ function NewPlayer(x,y)
         Camera.x = (self.x*6 + mousex)/7 - (love.graphics.getWidth()/2)*Camera.zoom
         Camera.y = (self.y*6 + mousey)/7 - (love.graphics.getHeight()/2)*Camera.zoom
 
-        return true
+        return self.health > 0
     end
 
     self.mousepressed = function (self, x,y, button)
