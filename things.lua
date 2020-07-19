@@ -222,6 +222,9 @@ function NewSniperShot(x,y, direction, owner)
     self.timer = 0
     self.owner = owner
 
+    love.audio.stop(Sounds.sniper)
+    love.audio.play(Sounds.sniper)
+
     local hasHit = {}
     while IsTileWalkable(WorldToTileCoords(self.x,self.y)) do
         self.x = self.x + math.cos(direction)*0.1
@@ -234,9 +237,6 @@ function NewSniperShot(x,y, direction, owner)
             end
         end
     end
-
-    love.audio.stop(Sounds.zap)
-    love.audio.play(Sounds.zap)
 
     self.update = function (self, dt)
         self.timer = self.timer + dt

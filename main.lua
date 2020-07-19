@@ -12,6 +12,7 @@ function love.load()
         death = love.audio.newSource("sounds/death.mp3", "static"),
         zap = love.audio.newSource("sounds/zap.mp3", "static"),
         oof = love.audio.newSource("sounds/oof.mp3", "static"),
+        sniper = love.audio.newSource("sounds/sniper.mp3", "static"),
 
         step1 = love.audio.newSource("sounds/step1.mp3", "static"),
         step2 = love.audio.newSource("sounds/step2.mp3", "static"),
@@ -69,13 +70,14 @@ function LoadLevelFromImage(imagePath)
 
     -- reset the camera
     -- and list of all objects in the scene (ThingList)
-    Camera = {x=0,y=0, zoom=1/0.8}
+    Camera = {x=64*8,y=64*8, zoom=1/0.8}
+    Camera.x = Camera.x - love.graphics.getWidth()*Camera.zoom/2
+    Camera.y = Camera.y - love.graphics.getHeight()*Camera.zoom/2
     ThingList = {}
 
     -- add the wizards to the scene
     ThePlayer = AddToThingList(NewPlayer(64*14.5,64*14.5))
     local bot = AddToThingList(NewBot(64*1.5, 64*1.5))
-    bot.enemy = ThePlayer
     bot.brain.root = NewSelectorNode()
 
     local goAway = NewSequenceNode()
@@ -95,12 +97,15 @@ function LoadLevelFromImage(imagePath)
         NewIsTakingDamageRightNowNode(),
         NewWalkAwayFromEnemyNode(),
     }
-    
+
     bot.brain.root.children = {
         runAwayFromDamage,
         goAway,
         goTowards,
     }
+
+    bot.enemy = ThePlayer
+
 
     -- load the image from the path and set tiles coresponding to the pixel at that position
     local image = love.image.newImageData(imagePath)
