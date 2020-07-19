@@ -214,8 +214,8 @@ end
 
 function NewSniperShot(x,y, direction, owner)
     local self = {}
-    self.x = x + math.cos(direction)*32
-    self.y = y + math.sin(direction)*32
+    self.x = x
+    self.y = y
     self.startx = self.x
     self.starty = self.y
     self.direction = direction
@@ -246,6 +246,97 @@ function NewSniperShot(x,y, direction, owner)
     self.draw = function (self)
         love.graphics.setColor(1,0,0.5, Conversion(1,0, 0,0.75,self.timer))
         love.graphics.line(self.x,self.y -14, self.startx,self.starty -14)
+    end
+
+    return self
+end
+
+function NewHeal(x,y)
+    local self = {}
+    self.x = x
+    self.y = y
+    self.timer = 0
+
+    love.audio.stop(Sounds.zap)
+    love.audio.play(Sounds.zap)
+
+    local tx,ty = WorldToTileCoords(self.x,self.y)
+    SetTile(tx, ty, HEAL_TILE)
+
+    self.update = function (self, dt)
+        self.timer = self.timer + dt
+        return self.timer < 5
+    end
+
+    self.draw = function (self)
+        -- love.graphics.circle("fill", self.x, self.y, 4)
+    end
+
+    return self
+end
+
+
+function NewHealTileVisual(x,y)
+    local self = {}
+    self.x = x
+    self.y = y
+    self.timer = 0
+    self.points = {}
+
+    -- add three circles in random places
+    for i=1, 5 do
+        table.insert(self.points, {love.math.random()*32 + 8, love.math.random()*32 + 8, radius = love.math.random()*16 + 8, color = love.math.random()*0.5 + 0.5})
+    end
+
+    self.update = function (self, dt)
+        self.timer = self.timer + dt
+
+        -- after 10 seconds despawn
+        if self.timer > 10 then
+            SetTile(self.x,self.y, FLOOR_TILE)
+            return false
+        end
+
+        -- randomly create ember particles
+        if love.math.random() < 0.05 then
+            AddToThingList(NewHealParticle(self.x*64 + love.math.random()*64,self.y*64 + love.math.random()*64))
+        end
+
+        return true
+    end
+
+    self.draw = function (self)
+        love.graphics.setStencilTest("greater", 0)
+        -- draw my three red circles
+        for i,point in pairs(self.points) do
+            love.graphics.setColor(0.2*point.color,0.8*point.color,0, Conversion(1,0, 9,10, self.timer))
+            love.graphics.circle("fill", self.x*64 + point[1],self.y*64 + point[2], point.radius)
+        end
+        love.graphics.setStencilTest()
+    end
+
+    return self
+end
+
+function NewHealParticle(x,y)
+    local self = {}
+    self.x = x
+    self.y = y
+    self.timer = 0
+    self.timerMax = Conversion(0.5,1.25, 0,1, love.math.random())
+    self.color = Conversion(0.5,1, 0,1, love.math.random())
+
+    self.update = function (self, dt)
+        self.timer = self.timer + dt
+        self.y = self.y - 1
+        self.x = self.x + math.sin(self.timer*3)*2
+
+        return self.timer < self.timerMax
+    end
+
+    self.draw = function (self)
+        love.graphics.setColor(0.2*self.color,0.8*self.color,0, Conversion(1,0, self.timerMax-0.15,self.timerMax, self.timer))
+        love.graphics.circle("fill", self.x,self.y, 10,4)
     end
 
     return self
