@@ -153,6 +153,7 @@ function NewFireTileVisual(x,y)
     self.timer = 0
     self.points = {}
 
+    -- add three circles in random places
     for i=1, 3 do
         table.insert(self.points, {love.math.random()*48 + 8, love.math.random()*48 + 8, radius = love.math.random()*16 + 8, color = love.math.random()*0.5 + 0.5})
     end
@@ -160,9 +161,15 @@ function NewFireTileVisual(x,y)
     self.update = function (self, dt)
         self.timer = self.timer + dt
 
+        -- after 10 seconds despawn
         if self.timer > 10 then
             SetTile(self.x,self.y, FLOOR_TILE)
             return false
+        end
+
+        -- randomly create ember particles
+        if love.math.random() < 0.05 then
+            AddToThingList(NewEmberParticle(self.x*64 -32 + love.math.random()*64,self.y*64 -32 + love.math.random()*64))
         end
 
         return true
@@ -170,11 +177,36 @@ function NewFireTileVisual(x,y)
 
     self.draw = function (self)
         love.graphics.setStencilTest("greater", 0)
+        -- draw my three red circles
         for i,point in pairs(self.points) do
             love.graphics.setColor(0.8*point.color,0.2*point.color,0, Conversion(1,0, 9,10, self.timer))
             love.graphics.circle("fill", self.x*64 + point[1],self.y*64 + point[2], point.radius)
         end
         love.graphics.setStencilTest()
+    end
+
+    return self
+end
+
+function NewEmberParticle(x,y)
+    local self = {}
+    self.x = x
+    self.y = y
+    self.timer = 0
+    self.timerMax = Conversion(0.5,1.25, 0,1, love.math.random())
+    self.color = Conversion(0.5,1, 0,1, love.math.random())
+
+    self.update = function (self, dt)
+        self.timer = self.timer + dt
+        self.y = self.y - 1
+        self.x = self.x + math.sin(self.timer*3)*2
+
+        return self.timer < self.timerMax
+    end
+
+    self.draw = function (self)
+        love.graphics.setColor(0.8*self.color,0.2*self.color,0, Conversion(1,0, self.timerMax-0.15,self.timerMax, self.timer))
+        love.graphics.circle("fill", self.x,self.y, 10,4)
     end
 
     return self

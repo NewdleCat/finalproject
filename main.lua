@@ -6,12 +6,23 @@ function love.load()
     UpdateController = 0
 
     Sounds = {
-        fireball = love.audio.newSource("fireball.mp3", "static"),
-        boom = love.audio.newSource("boom.mp3", "static"),
-        death = love.audio.newSource("death.mp3", "static"),
-        zap = love.audio.newSource("zap.mp3", "static"),
-        oof = love.audio.newSource("oof.mp3", "static"),
+        fireball = love.audio.newSource("sounds/fireball.mp3", "static"),
+        boom = love.audio.newSource("sounds/boom.mp3", "static"),
+        death = love.audio.newSource("sounds/death.mp3", "static"),
+        zap = love.audio.newSource("sounds/zap.mp3", "static"),
+        oof = love.audio.newSource("sounds/oof.mp3", "static"),
+
+        step1 = love.audio.newSource("sounds/step1.mp3", "static"),
+        step2 = love.audio.newSource("sounds/step2.mp3", "static"),
+        step3 = love.audio.newSource("sounds/step3.mp3", "static"),
+        step4 = love.audio.newSource("sounds/step4.mp3", "static"),
+
+        ocean = love.audio.newSource("sounds/ocean2.mp3", "stream"),
     }
+
+    Sounds.ocean:setLooping(true)
+    Sounds.ocean:setVolume(0.5)
+    Sounds.ocean:play()
 
     Timer = 0
     OceanShader = love.graphics.newShader [[
@@ -38,7 +49,7 @@ function love.load()
     FLOOR_TILE = 0
     WALL_TILE = 1
     FIRE_TILE = 2
-    LoadLevelFromImage("map1.png")
+    LoadLevelFromImage("maps/map1.png")
 end
 
 function LoadLevelFromImage(imagePath)

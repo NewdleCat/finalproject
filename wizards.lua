@@ -19,6 +19,13 @@ function NewWizard(x,y)
     self.legs[1] = NewWizardLeg(math.pi/-4, 7, self)
     self.legs[2] = NewWizardLeg(math.pi/4, 7, self)
 
+    self.stepSounds = {
+        Sounds.step1,
+        Sounds.step2,
+        Sounds.step3,
+        Sounds.step4,
+    }
+
     self.update = function (self, dt)
         -- leg code
 
