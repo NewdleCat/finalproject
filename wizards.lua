@@ -211,7 +211,8 @@ function NewWizard(x,y)
     self.healSpell = function (self)
         if self.mana >= 50 then
             self.mana = self.mana - 50
-            AddToThingList(NewHeal(self.x, self.y))
+            local x,y = WorldToTileCoords(self.x,self.y)
+            SetTile(x,y, HEAL_TILE)
         end
     end
 
