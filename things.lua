@@ -56,12 +56,12 @@ function NewFireball(x,y, direction)
     return self
 end
 
-function NewZap(x,y, direction, owner)
+function NewZap(x,y, direction, offset, owner)
     local self = {}
-    self.x = x
-    self.y = y
+    self.x = x + math.cos(direction)*48
+    self.y = y + math.sin(direction)*48
     self.trail = {}
-    self.direction = direction
+    self.direction = direction + offset
     self.timer = 0
     self.owner = owner
     self.dieing = false
@@ -76,12 +76,12 @@ function NewZap(x,y, direction, owner)
         local randomness = 16
         if not self.dieing then
             table.insert(self.trail, {self.x + love.math.random()*randomness - randomness/2, self.y + love.math.random()*randomness - randomness/2})
+
+            local speed = 8
+            self.x = self.x + math.cos(self.direction)*speed
+            self.y = self.y + math.sin(self.direction)*speed
         end
         self.trailIndex = self.trailIndex + 1
-
-        local speed = 8
-        self.x = self.x + math.cos(self.direction)*speed
-        self.y = self.y + math.sin(self.direction)*speed
 
         if not IsTileWalkable(WorldToTileCoords(self.x,self.y)) then
             self.dieing = true
@@ -108,12 +108,12 @@ function NewZap(x,y, direction, owner)
         local pastWidth = love.graphics.getLineWidth()
         love.graphics.setColor(0,0,0)
         love.graphics.setLineWidth(2)
-        --love.graphics.circle("fill", self.x,self.y, 16)
+        local height = 14
         for i=math.max(1, self.trailIndex), #self.trail-1 do
             local this = self.trail[i]
             local next = self.trail[i+1]
 
-            love.graphics.line(this[1], this[2], next[1], next[2])
+            love.graphics.line(this[1], this[2] - height, next[1], next[2] - height)
         end
         love.graphics.setLineWidth(pastWidth)
     end
@@ -151,6 +151,11 @@ function NewFireTileVisual(x,y)
     self.x = x
     self.y = y
     self.timer = 0
+    self.points = {}
+
+    for i=1, 3 do
+        table.insert(self.points, {love.math.random()*48 + 8, love.math.random()*48 + 8, radius = love.math.random()*16 + 8, color = love.math.random()*0.5 + 0.5})
+    end
 
     self.update = function (self, dt)
         self.timer = self.timer + dt
@@ -164,8 +169,12 @@ function NewFireTileVisual(x,y)
     end
 
     self.draw = function (self)
-        love.graphics.setColor(0.8,0.2,0, Conversion(1,0, 9,10, self.timer))
-        love.graphics.rectangle("fill", self.x*64,self.y*64, 64,64)
+        love.graphics.setStencilTest("greater", 0)
+        for i,point in pairs(self.points) do
+            love.graphics.setColor(0.8*point.color,0.2*point.color,0, Conversion(1,0, 9,10, self.timer))
+            love.graphics.circle("fill", self.x*64 + point[1],self.y*64 + point[2], point.radius)
+        end
+        love.graphics.setStencilTest()
     end
 
     return self

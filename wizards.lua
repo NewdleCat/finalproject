@@ -237,9 +237,9 @@ function NewPlayer(x,y)
 
         if button == 2 and self.mana > 15 then
             self.mana = self.mana - 15
-            AddToThingList(NewZap(self.x,self.y, self.direction, self))
-            AddToThingList(NewZap(self.x,self.y, self.direction + math.pi/10, self))
-            AddToThingList(NewZap(self.x,self.y, self.direction - math.pi/10, self))
+            AddToThingList(NewZap(self.x,self.y, self.direction, 0, self))
+            AddToThingList(NewZap(self.x,self.y, self.direction, math.pi/10, self))
+            AddToThingList(NewZap(self.x,self.y, self.direction, -1*math.pi/10, self))
             --AddToThingList(NewHealAreaOfEffect(self.x, self.y))
         end
     end

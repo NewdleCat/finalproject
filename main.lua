@@ -5,13 +5,6 @@ function love.load()
     love.window.setMode(1600, 1600*9/16, {vsync=true})
     UpdateController = 0
 
-    Camera = {x=0,y=0, zoom=1/0.8}
-
-    -- ThingList is the list of all currently active things in the game
-    ThingList = {}
-    AddToThingList(NewWizard(100,100))
-    ThePlayer = AddToThingList(NewPlayer(500,500))
-
     Sounds = {
         fireball = love.audio.newSource("fireball.mp3", "static"),
         boom = love.audio.newSource("boom.mp3", "static"),
@@ -19,25 +12,6 @@ function love.load()
         zap = love.audio.newSource("zap.mp3", "static"),
         oof = love.audio.newSource("oof.mp3", "static"),
     }
-
-    Map = {}
-    MapThings = {}
-    MapSize = 16
-    for x=0, MapSize-1 do
-        Map[x] = {}
-        MapThings[x] = {}
-        for y=0, MapSize-1 do
-            Map[x][y] = 0
-        end
-    end
-    FLOOR_TILE = 0
-    WALL_TILE = 1
-    FIRE_TILE = 2
-
-    SetTile(4,4, WALL_TILE)
-    SetTile(11,4, WALL_TILE)
-    SetTile(4,11, WALL_TILE)
-    SetTile(11,11, WALL_TILE)
 
     Timer = 0
     OceanShader = love.graphics.newShader [[
@@ -60,6 +34,46 @@ function love.load()
             return texcolor * color;
         }
     ]]
+
+    FLOOR_TILE = 0
+    WALL_TILE = 1
+    FIRE_TILE = 2
+    LoadLevelFromImage("map1.png")
+end
+
+function LoadLevelFromImage(imagePath)
+    -- initialize the map as a 2d array, all zeroes
+    Map = {}
+    MapThings = {}
+    MapSize = 16
+    for x=0, MapSize-1 do
+        Map[x] = {}
+        MapThings[x] = {}
+        for y=0, MapSize-1 do
+            Map[x][y] = 0
+        end
+    end
+
+    -- reset the camera
+    -- and list of all objects in the scene (ThingList)
+    Camera = {x=0,y=0, zoom=1/0.8}
+    ThingList = {}
+
+    -- add the wizards to the scene
+    AddToThingList(NewWizard(100,100))
+    ThePlayer = AddToThingList(NewPlayer(500,500))
+
+    -- load the image from the path and set tiles coresponding to the pixel at that position
+    local image = love.image.newImageData(imagePath)
+    for x=0, MapSize-1 do
+        for y=0, MapSize-1 do
+            local r,g,b,a = image:getPixel(x,y)
+
+            if r == 0 and g == 0 and b == 0 then
+                SetTile(x,y, WALL_TILE)
+            end
+        end
+    end
 end
 
 function GetTile(x,y)
@@ -164,10 +178,12 @@ function love.draw()
     -- draw the arena
     love.graphics.setLineWidth(8)
     local tileSize = 64
+    love.graphics.stencil(function () love.graphics.rectangle("fill", 0,0, 16*tileSize,16*tileSize) end, "replace", 0)
     for x=1, 16 do
         for y=1, 20 do
             if y < 17 then
                 local tile = Map[x-1][y-1]
+                love.graphics.stencil(function () love.graphics.rectangle("fill", (x-1)*tileSize,(y-1)*tileSize, tileSize,tileSize) end, "replace", 1, true)
                 love.graphics.setColor(0.425,0.425,0.425)
                 love.graphics.rectangle("line", (x-1)*tileSize,(y-1)*tileSize, tileSize,tileSize)
                 love.graphics.setColor(0.5,0.5,0.5)
@@ -188,8 +204,6 @@ function love.draw()
             end
         end
     end
-
-    love.graphics.stencil(function () love.graphics.rectangle("fill", 0,0, 16*tileSize,16*tileSize) end, "replace", 1)
 
     -- make things "farther away" (bigger y value) go behind other things
     table.sort(ThingList, function (a,b)
