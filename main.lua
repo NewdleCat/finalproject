@@ -22,6 +22,8 @@ function love.load()
         ocean = love.audio.newSource("sounds/ocean2.mp3", "stream"),
     }
 
+    Paused = false
+
     love.audio.setVolume(0.2)
     Sounds.ocean:setLooping(true)
     Sounds.ocean:setVolume(0.5)
@@ -164,6 +166,8 @@ function AddToThingList(thing)
 end
 
 function love.update(dt)
+    if Paused then return end
+
     -- control the update cycle to always run at 60 times per second
     -- we could deltatime every physical interaction in the game, but eh fuck it
     -- this also guarantees that the AI always has the same simulation time between evaluations
@@ -209,6 +213,10 @@ function love.keypressed(key)
             thing:keypressed(key)
         end
     end
+
+    if key == "space" then
+        Paused = not Paused
+    end
 end
 
 function love.wheelmoved(x,y)
@@ -243,11 +251,12 @@ function love.draw()
         for y=1, 20 do
             if y < 17 then
                 local tile = Map[x-1][y-1]
-                love.graphics.stencil(function () love.graphics.rectangle("fill", (x-1)*tileSize,(y-1)*tileSize, tileSize,tileSize) end, "replace", 1, true)
+                local dx,dy = (x-1)*tileSize, (y-1)*tileSize
+                love.graphics.stencil(function () love.graphics.rectangle("fill", dx,dy,tileSize,tileSize) end, "replace", 1, true)
                 love.graphics.setColor(0.425,0.425,0.425)
-                love.graphics.rectangle("line", (x-1)*tileSize,(y-1)*tileSize, tileSize,tileSize)
+                love.graphics.rectangle("line", dx,dy, tileSize,tileSize)
                 love.graphics.setColor(0.5,0.5,0.5)
-                love.graphics.rectangle("fill", (x-1)*tileSize,(y-1)*tileSize, tileSize,tileSize)
+                love.graphics.rectangle("fill", dx,dy, tileSize,tileSize)
             else
                 local alpha = Conversion(1,0, 17,20, y)
                 love.graphics.setColor(0.2,0.2,0.2, alpha)
@@ -275,6 +284,27 @@ function love.draw()
     for i,thing in pairs(ThingList) do
         love.graphics.setColor(1,1,1)
         thing:draw()
+    end
+
+    -- draw the shadows on top of the map and the things
+    for x=0, 15 do
+        for y=0, 15 do
+            -- draw wall shadows
+            local dx,dy = x*tileSize, y*tileSize
+            love.graphics.setColor(0.1,0.1,0.1, 0.5)
+            if IsTileWalkable(x,y)
+            and IsTileWalkable(x,y+1) then
+                -- top left triangle
+                if GetTile(x-1,y) == WALL_TILE or GetTile(x-1, y+1) == WALL_TILE then
+                    love.graphics.polygon("fill", dx,dy, dx+tileSize,dy, dx,dy+tileSize)
+                end
+
+                -- bottom right triangle
+                if GetTile(x-1,y+1) == WALL_TILE or GetTile(x,y+1) == WALL_TILE then
+                    love.graphics.polygon("fill", dx,dy+tileSize, dx+tileSize,dy+tileSize, dx+tileSize,dy)
+                end
+            end
+        end
     end
 
     -- draw the health bars on top of everything else
