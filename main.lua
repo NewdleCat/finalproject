@@ -162,6 +162,15 @@ function love.mousepressed(x,y, button)
     end
 end
 
+function love.keypressed(key)
+    -- relay this event to all things that exist
+    for i,thing in pairs(ThingList) do
+        if thing.keypressed then
+            thing:keypressed(key)
+        end
+    end
+end
+
 function love.wheelmoved(x,y)
     Camera.zoom = Camera.zoom - y/10
 end

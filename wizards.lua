@@ -148,6 +148,29 @@ function NewWizard(x,y)
         love.graphics.rectangle("fill", self.x -width/2 + width, self.y - 100 + 16, -1*width*(1 - self.mana/100), 10)
     end
 
+    self.fireballAttack = function (self)
+        if self.mana >= 35 then
+            self.mana = self.mana - 35
+            AddToThingList(NewFireball(self.x,self.y+14, self.direction))
+        end
+    end
+
+    self.zapAttack = function (self)
+        if self.mana >= 15 then
+            self.mana = self.mana - 15
+            AddToThingList(NewZap(self.x,self.y, self.direction, 0, self))
+            AddToThingList(NewZap(self.x,self.y, self.direction, math.pi/10, self))
+            AddToThingList(NewZap(self.x,self.y, self.direction, -1*math.pi/10, self))
+        end
+    end
+
+    self.sniperAttack = function (self)
+        if self.mana >= 75 then
+            self.mana = self.mana - 75
+            AddToThingList(NewSniperShot(self.x,self.y, self.direction, self))
+        end
+    end
+
     return self
 end
 
@@ -236,18 +259,19 @@ function NewPlayer(x,y)
         return self.health > 0
     end
 
+    self.keypressed = function (self, key)
+        if key == "e" then
+            self:sniperAttack()
+        end
+    end
+
     self.mousepressed = function (self, x,y, button)
-        if button == 1 and self.mana > 35 then
-            self.mana = self.mana - 35
-            AddToThingList(NewFireball(self.x,self.y+14, self.direction))
+        if button == 1 then
+            self:fireballAttack()
         end
 
-        if button == 2 and self.mana > 15 then
-            self.mana = self.mana - 15
-            AddToThingList(NewZap(self.x,self.y, self.direction, 0, self))
-            AddToThingList(NewZap(self.x,self.y, self.direction, math.pi/10, self))
-            AddToThingList(NewZap(self.x,self.y, self.direction, -1*math.pi/10, self))
-            --AddToThingList(NewHealAreaOfEffect(self.x, self.y))
+        if button == 2 then
+            self:zapAttack()
         end
     end
 

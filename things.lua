@@ -211,3 +211,42 @@ function NewEmberParticle(x,y)
 
     return self
 end
+
+function NewSniperShot(x,y, direction, owner)
+    local self = {}
+    self.x = x + math.cos(direction)*32
+    self.y = y + math.sin(direction)*32
+    self.startx = self.x
+    self.starty = self.y
+    self.direction = direction
+    self.timer = 0
+    self.owner = owner
+
+    local hasHit = {}
+    while IsTileWalkable(WorldToTileCoords(self.x,self.y)) do
+        self.x = self.x + math.cos(direction)*0.1
+        self.y = self.y + math.sin(direction)*0.1
+
+        for i,v in pairs(ThingList) do
+            if not hasHit[v] and v.living and Distance(v.x,v.y, self.x,self.y) <= 30 and v ~= self.owner then
+                v.health = v.health - 75
+                hasHit[v] = true
+            end
+        end
+    end
+
+    love.audio.stop(Sounds.zap)
+    love.audio.play(Sounds.zap)
+
+    self.update = function (self, dt)
+        self.timer = self.timer + dt
+        return self.timer < 0.75
+    end
+
+    self.draw = function (self)
+        love.graphics.setColor(1,0,0.5, Conversion(1,0, 0,0.75,self.timer))
+        love.graphics.line(self.x,self.y -14, self.startx,self.starty -14)
+    end
+
+    return self
+end
