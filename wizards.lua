@@ -71,7 +71,7 @@ function NewWizard(x,y)
         end
 
         if tile == HEAL_TILE and self.health < 100 then
-            self.health = self.health + 0.5
+            self.health = self.health + 0.2
         end
 
         -- check if i was damaged, play a hurt sound

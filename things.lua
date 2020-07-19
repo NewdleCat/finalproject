@@ -283,11 +283,6 @@ function NewHealTileVisual(x,y)
     self.timer = 0
     self.points = {}
 
-    -- add three circles in random places
-    for i=1, 5 do
-        table.insert(self.points, {love.math.random()*32 + 8, love.math.random()*32 + 8, radius = love.math.random()*16 + 8, color = love.math.random()*0.5 + 0.5})
-    end
-
     self.update = function (self, dt)
         self.timer = self.timer + dt
 
@@ -308,9 +303,10 @@ function NewHealTileVisual(x,y)
     self.draw = function (self)
         love.graphics.setStencilTest("greater", 0)
         -- draw my three red circles
-        for i,point in pairs(self.points) do
-            love.graphics.setColor(0.2*point.color,0.8*point.color,0, Conversion(1,0, 9,10, self.timer))
-            love.graphics.circle("fill", self.x*64 + point[1],self.y*64 + point[2], point.radius)
+        for i=1, 3 do
+            local rad = (i*13 + self.timer*10)%40
+            love.graphics.setColor(0.2,0.5,0, Conversion(1,0, 25,35, rad)*Conversion(1,0, 9,10, self.timer))
+            love.graphics.circle("line", self.x*64 + 32,self.y*64 + 32, rad)
         end
         love.graphics.setStencilTest()
     end
