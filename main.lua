@@ -1,4 +1,5 @@
 require "things"
+require "wizards"
 
 function love.load()
     love.window.setMode(1600, 1600*9/16, {vsync=true})
@@ -16,6 +17,7 @@ function love.load()
         boom = love.audio.newSource("boom.mp3", "static"),
         death = love.audio.newSource("death.mp3", "static"),
         zap = love.audio.newSource("zap.mp3", "static"),
+        oof = love.audio.newSource("oof.mp3", "static"),
     }
 
     Map = {}
@@ -29,12 +31,13 @@ function love.load()
     MapThings = {}
     FLOOR_TILE = 0
     WALL_TILE = 1
+    FIRE_TILE = 2
 
     Map[4][4] = WALL_TILE
     Map[11][4] = WALL_TILE
     Map[4][11] = WALL_TILE
     Map[11][11] = WALL_TILE
-    UpdateMapThings()
+    UpdateWalls()
 
     Timer = 0
     OceanShader = love.graphics.newShader [[
@@ -67,6 +70,11 @@ end
 function SetTile(x,y, value)
     if x < 0 or y < 0 or x >= MapSize or y >= MapSize then return end
     Map[x][y] = value
+
+    if value == FIRE_TILE then
+        -- add a visual just to display the tile
+        AddToThingList(NewFireTileVisual(x,y))
+    end
 end
 
 function IsTileWalkable(x,y)
@@ -78,7 +86,7 @@ function WorldToTileCoords(x,y)
     return math.floor(x/64), math.floor(y/64)
 end
 
-function UpdateMapThings()
+function UpdateWalls()
     for i,v in pairs(ThingList) do
         if v == MapThings[v] then
             v.dead = true
@@ -168,12 +176,11 @@ function love.draw()
     for x=1, 16 do
         for y=1, 20 do
             if y < 17 then
-                if Map[x-1][y-1] == 0 then
-                    love.graphics.setColor(0.425,0.425,0.425)
-                    love.graphics.rectangle("line", (x-1)*tileSize,(y-1)*tileSize, tileSize,tileSize)
-                    love.graphics.setColor(0.5,0.5,0.5)
-                    love.graphics.rectangle("fill", (x-1)*tileSize,(y-1)*tileSize, tileSize,tileSize)
-                end
+                local tile = Map[x-1][y-1]
+                love.graphics.setColor(0.425,0.425,0.425)
+                love.graphics.rectangle("line", (x-1)*tileSize,(y-1)*tileSize, tileSize,tileSize)
+                love.graphics.setColor(0.5,0.5,0.5)
+                love.graphics.rectangle("fill", (x-1)*tileSize,(y-1)*tileSize, tileSize,tileSize)
             else
                 local alpha = Conversion(1,0, 17,20, y)
                 love.graphics.setColor(0.2,0.2,0.2, alpha)
