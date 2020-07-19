@@ -1,5 +1,6 @@
 require "things"
 require "wizards"
+require "brain"
 
 function love.load()
     love.window.setMode(1600, 1600*9/16, {vsync=true})
@@ -20,6 +21,7 @@ function love.load()
         ocean = love.audio.newSource("sounds/ocean2.mp3", "stream"),
     }
 
+    love.audio.setVolume(0.2)
     Sounds.ocean:setLooping(true)
     Sounds.ocean:setVolume(0.5)
     Sounds.ocean:play()
@@ -71,8 +73,34 @@ function LoadLevelFromImage(imagePath)
     ThingList = {}
 
     -- add the wizards to the scene
-    AddToThingList(NewWizard(100,100))
-    ThePlayer = AddToThingList(NewPlayer(500,500))
+    ThePlayer = AddToThingList(NewPlayer(64*14.5,64*14.5))
+    local bot = AddToThingList(NewBot(64*1.5, 64*1.5))
+    bot.enemy = ThePlayer
+    bot.brain.root = NewSelectorNode()
+
+    local goAway = NewSequenceNode()
+    local goTowards = NewSequenceNode()
+    local runAwayFromDamage = NewSequenceNode()
+    goAway.children = {
+        NewLineOfSightNode(),
+        NewPointTowardsEnemyNode(),
+        NewWalkAwayFromEnemyNode(),
+        NewSnipeEnemyNode(),
+    }
+    goTowards.children = {
+        NewPointTowardsEnemyNode(),
+        NewWalkTowardsEnemyNode(),
+    }
+    runAwayFromDamage.children = {
+        NewIsTakingDamageRightNowNode(),
+        NewWalkAwayFromEnemyNode(),
+    }
+    
+    bot.brain.root.children = {
+        runAwayFromDamage,
+        goAway,
+        goTowards,
+    }
 
     -- load the image from the path and set tiles coresponding to the pixel at that position
     local image = love.image.newImageData(imagePath)
@@ -142,6 +170,8 @@ function love.update(dt)
             -- if this thing's update function returns false, remove it from the list
             if not thing:update(1/60) or thing.dead then
                 -- if this thing has a death function, do it
+                thing.dead = true
+
                 if thing.onDeath then
                     thing:onDeath()
                 end

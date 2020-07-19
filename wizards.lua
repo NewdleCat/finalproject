@@ -13,6 +13,8 @@ function NewWizard(x,y)
     self.mana = 100
     self.name = "wizard"
     self.living = true
+    self.moveVector = {0,0}
+    self.hurtTimer = 0
 
     -- create my legs (just for looks)
     self.legs = {}
@@ -64,18 +66,49 @@ function NewWizard(x,y)
         self.mana = math.min(self.mana + 0.1, 100)
 
         local tile = GetTile(WorldToTileCoords(self.x,self.y))
-
         if tile == FIRE_TILE then
             self.health = self.health - 0.5
         end
 
         -- check if i was damaged, play a hurt sound
+        self.hurtTimer = math.max(self.hurtTimer - dt, 0)
         if self.health > 0 and self.lastHealth > self.health then
             if not Sounds.oof:isPlaying() then
                 love.audio.play(Sounds.oof)
+                self.hurtTimer = 1
             end
         end
         self.lastHealth = self.health
+
+        -- walk
+        -- do some trigonometry here so that moving in diagonals doesn't make you go faster
+        local walkSpeed = 0.8
+        if self.moveVector[1] ~= 0 or self.moveVector[2] ~= 0 then
+            local moveAngle = GetAngle(0,0, self.moveVector[1],self.moveVector[2])
+            self.xSpeed = self.xSpeed + math.cos(moveAngle)*walkSpeed
+            self.ySpeed = self.ySpeed + math.sin(moveAngle)*walkSpeed
+        end
+
+        -- apply some friction to be able to stop walking
+        local friction = 0.8
+        self.xSpeed = self.xSpeed * friction
+        self.ySpeed = self.ySpeed * friction
+
+        -- collide with walls and the edges of the arena
+        if not IsTileWalkable(WorldToTileCoords(self.x + self.xSpeed, self.y)) then
+            self.xSpeed = 0
+        end
+        if not IsTileWalkable(WorldToTileCoords(self.x, self.y + self.ySpeed)) then
+            self.ySpeed = 0
+        end
+        if not IsTileWalkable(WorldToTileCoords(self.x + self.xSpeed, self.y + self.ySpeed)) then
+            self.xSpeed = 0
+            self.ySpeed = 0
+        end
+
+        -- integrate velocity into position
+        self.x = self.x + self.xSpeed
+        self.y = self.y + self.ySpeed
 
         -- die if out of health
         return self.health > 0
@@ -191,6 +224,23 @@ function NewWizardLeg(angle, radius, owner)
     return self
 end
 
+function NewBot(x,y)
+    local self = NewWizard(x,y)
+    self.brain = NewBrain(self)
+
+    self.parentUpdate = self.update
+    self.update = function (self, dt)
+        self.moveVector[1] = 0
+        self.moveVector[2] = 0
+        if not self.enemy.dead then
+            self.brain:query()
+        end
+        return self:parentUpdate(dt)
+    end
+
+    return self
+end
+
 function NewPlayer(x,y)
     -- this acts as inheritence, inheriting the stuff that the base Wizard class has
     local self = NewWizard(x,y)
@@ -199,52 +249,24 @@ function NewPlayer(x,y)
     -- store the inherited update so that we can call it in our new update function
     self.parentUpdate = self.update
     self.update = function (self, dt)
-        self:parentUpdate(dt)
-
-        local walkSpeed = 0.8
-        local moveVector = {0,0}
-
         -- walk according to keyboard input
+        self.moveVector[1] = 0
+        self.moveVector[2] = 0
         if love.keyboard.isDown("w") then
-            moveVector[2] = -1
+            self.moveVector[2] = self.moveVector[2] - 1
         end
         if love.keyboard.isDown("s") then
-            moveVector[2] = 1
+            self.moveVector[2] = self.moveVector[2] + 1
         end
         if love.keyboard.isDown("a") then
-            moveVector[1] = -1
+            self.moveVector[1] = self.moveVector[1] - 1
         end
         if love.keyboard.isDown("d") then
-            moveVector[1] = 1
+            self.moveVector[1] = self.moveVector[1] + 1
         end
 
-        -- do some trigonometry here so that moving in diagonals doesn't make you go faster
-        if moveVector[1] ~= 0 or moveVector[2] ~= 0 then
-            local moveAngle = GetAngle(0,0, moveVector[1],moveVector[2])
-            self.xSpeed = self.xSpeed + math.cos(moveAngle)*walkSpeed
-            self.ySpeed = self.ySpeed + math.sin(moveAngle)*walkSpeed
-        end
-
-        -- apply some friction to be able to stop walking
-        local friction = 0.8
-        self.xSpeed = self.xSpeed * friction
-        self.ySpeed = self.ySpeed * friction
-
-        -- collide with walls and the edges of the arena
-        if not IsTileWalkable(WorldToTileCoords(self.x + self.xSpeed, self.y)) then
-            self.xSpeed = 0
-        end
-        if not IsTileWalkable(WorldToTileCoords(self.x, self.y + self.ySpeed)) then
-            self.ySpeed = 0
-        end
-        if not IsTileWalkable(WorldToTileCoords(self.x + self.xSpeed, self.y + self.ySpeed)) then
-            self.xSpeed = 0
-            self.ySpeed = 0
-        end
-
-        -- integrate velocity into position
-        self.x = self.x + self.xSpeed
-        self.y = self.y + self.ySpeed
+        -- call the base wizard class's update function
+        local stillAlive = self:parentUpdate(dt)
 
         -- always point towards the mouse
         local mousex,mousey = love.mouse.getX()*Camera.zoom + Camera.x, love.mouse.getY()*Camera.zoom + Camera.y
@@ -256,7 +278,7 @@ function NewPlayer(x,y)
         Camera.y = (self.y*6 + mousey)/7 - (love.graphics.getHeight()/2)*Camera.zoom
 
         -- only stay alive while i have health remaining
-        return self.health > 0
+        return stillAlive
     end
 
     self.keypressed = function (self, key)

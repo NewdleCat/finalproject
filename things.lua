@@ -169,7 +169,7 @@ function NewFireTileVisual(x,y)
 
         -- randomly create ember particles
         if love.math.random() < 0.05 then
-            AddToThingList(NewEmberParticle(self.x*64 -32 + love.math.random()*64,self.y*64 -32 + love.math.random()*64))
+            AddToThingList(NewEmberParticle(self.x*64 + love.math.random()*64,self.y*64 + love.math.random()*64))
         end
 
         return true
