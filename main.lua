@@ -140,7 +140,7 @@ function love.update(dt)
         -- update all things in the ThingList
         for i,thing in pairs(ThingList) do
             -- if this thing's update function returns false, remove it from the list
-            if not thing:update(1/60) then
+            if not thing:update(1/60) or thing.dead then
                 -- if this thing has a death function, do it
                 if thing.onDeath then
                     thing:onDeath()
