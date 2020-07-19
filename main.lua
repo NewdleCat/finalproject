@@ -52,6 +52,7 @@ function love.load()
     FLOOR_TILE = 0
     WALL_TILE = 1
     FIRE_TILE = 2
+    HEAL_TILE = 3
     LoadLevelFromImage("maps/map1.png")
 end
 
@@ -141,6 +142,10 @@ function SetTile(x,y, value)
 
     if value == WALL_TILE then
         MapThings[x][y] = AddToThingList(NewWall(x,y))
+    end
+
+    if value == HEAL_TILE then
+        MapThings[x][y] = AddToThingList(NewHealTileVisual(x, y))
     end
 end
 

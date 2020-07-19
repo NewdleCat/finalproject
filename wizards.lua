@@ -70,6 +70,10 @@ function NewWizard(x,y)
             self.health = self.health - 0.5
         end
 
+        if tile == HEAL_TILE and self.health < 100 then
+            self.health = self.health + 0.5
+        end
+
         -- check if i was damaged, play a hurt sound
         self.hurtTimer = math.max(self.hurtTimer - dt, 0)
         if self.health > 0 and self.lastHealth > self.health then
@@ -204,6 +208,13 @@ function NewWizard(x,y)
         end
     end
 
+    self.healSpell = function (self)
+        if self.mana >= 50 then
+            self.mana = self.mana - 50
+            AddToThingList(NewHeal(self.x, self.y))
+        end
+    end
+
     return self
 end
 
@@ -284,6 +295,10 @@ function NewPlayer(x,y)
     self.keypressed = function (self, key)
         if key == "e" then
             self:sniperAttack()
+        end
+
+        if key == "q" then
+            self:healSpell()
         end
     end
 
