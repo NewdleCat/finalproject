@@ -111,7 +111,9 @@ function NewWizard(x,y)
             -- i guess my arm wasn't behind me, draw it on top of evething else
             self:drawArm()
         end
+    end
 
+    self.drawGui = function (self)
         -- draw health bar
         local width = 120
         love.graphics.setColor(1,0,0.2)
@@ -183,14 +185,14 @@ function NewPlayer(x,y)
         self.xSpeed = self.xSpeed * friction
         self.ySpeed = self.ySpeed * friction
 
-        -- collide with the edges of the arena
-        if not IsInsideArena(self.x + self.xSpeed, self.y) then
+        -- collide with walls and the edges of the arena
+        if not IsTileWalkable(WorldToTileCoords(self.x + self.xSpeed, self.y)) then
             self.xSpeed = 0
         end
-        if not IsInsideArena(self.x, self.y + self.ySpeed) then
+        if not IsTileWalkable(WorldToTileCoords(self.x, self.y + self.ySpeed)) then
             self.ySpeed = 0
         end
-        if not IsInsideArena(self.x + self.xSpeed, self.y + self.ySpeed) then
+        if not IsTileWalkable(WorldToTileCoords(self.x + self.xSpeed, self.y + self.ySpeed)) then
             self.xSpeed = 0
             self.ySpeed = 0
         end
@@ -401,6 +403,28 @@ function NewZap(x,y, direction, owner)
             love.graphics.line(this[1], this[2], next[1], next[2])
         end
         love.graphics.setLineWidth(pastWidth)
+    end
+
+    return self
+end
+
+function NewWall(x,y)
+    local self = {}
+    self.x = x
+    self.y = y+64 -- have y be my bottom left corner so i'm layered nicely with other objects
+
+    self.update = function (self, dt)
+        return true
+    end
+
+    self.draw = function (self)
+        love.graphics.setColor(0.3,0.3,0.3)
+        love.graphics.rectangle("fill", self.x,self.y-128, 64,64)
+        love.graphics.setColor(0.2,0.2,0.2)
+        love.graphics.rectangle("line", self.x,self.y-128, 64,64)
+        love.graphics.rectangle("fill", self.x,self.y-64, 64,64)
+        love.graphics.setColor(0.1,0.1,0.1)
+        love.graphics.rectangle("line", self.x,self.y-64, 64,64)
     end
 
     return self

@@ -18,6 +18,24 @@ function love.load()
         zap = love.audio.newSource("zap.mp3", "static"),
     }
 
+    Map = {}
+    MapSize = 16
+    for x=0, MapSize-1 do
+        Map[x] = {}
+        for y=0, MapSize-1 do
+            Map[x][y] = 0
+        end
+    end
+    MapThings = {}
+    FLOOR_TILE = 0
+    WALL_TILE = 1
+
+    Map[4][4] = WALL_TILE
+    Map[11][4] = WALL_TILE
+    Map[4][11] = WALL_TILE
+    Map[11][11] = WALL_TILE
+    UpdateMapThings()
+
     Timer = 0
     OceanShader = love.graphics.newShader [[
         uniform float timer;
@@ -39,6 +57,43 @@ function love.load()
             return texcolor * color;
         }
     ]]
+end
+
+function GetTile(x,y)
+    if x < 0 or y < 0 or x >= MapSize or y >= MapSize then return false end
+    return Map[x][y]
+end
+
+function SetTile(x,y, value)
+    if x < 0 or y < 0 or x >= MapSize or y >= MapSize then return end
+    Map[x][y] = value
+end
+
+function IsTileWalkable(x,y)
+    if x < 0 or y < 0 or x >= MapSize or y >= MapSize then return false end
+    return Map[x][y] ~= WALL_TILE
+end
+
+function WorldToTileCoords(x,y)
+    return math.floor(x/64), math.floor(y/64)
+end
+
+function UpdateMapThings()
+    for i,v in pairs(ThingList) do
+        if v == MapThings[v] then
+            v.dead = true
+        end
+    end
+
+    MapThings = {}
+    for x=0, MapSize-1 do
+        for y=0, MapSize-1 do
+            if Map[x][y] == WALL_TILE then
+                local this = AddToThingList(NewWall(x*64,y*64))
+                MapThings[this] = this
+            end
+        end
+    end
 end
 
 function AddToThingList(thing)
@@ -113,10 +168,12 @@ function love.draw()
     for x=1, 16 do
         for y=1, 20 do
             if y < 17 then
-                love.graphics.setColor(0.425,0.425,0.425)
-                love.graphics.rectangle("line", (x-1)*tileSize,(y-1)*tileSize, tileSize,tileSize)
-                love.graphics.setColor(0.5,0.5,0.5)
-                love.graphics.rectangle("fill", (x-1)*tileSize,(y-1)*tileSize, tileSize,tileSize)
+                if Map[x-1][y-1] == 0 then
+                    love.graphics.setColor(0.425,0.425,0.425)
+                    love.graphics.rectangle("line", (x-1)*tileSize,(y-1)*tileSize, tileSize,tileSize)
+                    love.graphics.setColor(0.5,0.5,0.5)
+                    love.graphics.rectangle("fill", (x-1)*tileSize,(y-1)*tileSize, tileSize,tileSize)
+                end
             else
                 local alpha = Conversion(1,0, 17,20, y)
                 love.graphics.setColor(0.2,0.2,0.2, alpha)
@@ -146,6 +203,13 @@ function love.draw()
     for i,thing in pairs(ThingList) do
         love.graphics.setColor(1,1,1)
         thing:draw()
+    end
+
+    -- draw the health bars on top of everything else
+    for i,thing in pairs(ThingList) do
+        if thing.drawGui then
+            thing:drawGui()
+        end
     end
 
     love.graphics.pop()
