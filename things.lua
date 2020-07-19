@@ -123,8 +123,8 @@ end
 
 function NewWall(x,y)
     local self = {}
-    self.x = x
-    self.y = y+64 -- have y be my bottom left corner so i'm layered nicely with other objects
+    self.x = x*64
+    self.y = y*64 +64 -- have y be my bottom left corner so i'm layered nicely with other objects
 
     self.update = function (self, dt)
         return true

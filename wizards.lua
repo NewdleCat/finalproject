@@ -63,7 +63,7 @@ function NewWizard(x,y)
         end
 
         -- check if i was damaged, play a hurt sound
-        if self.lastHealth > self.health then
+        if self.health > 0 and self.lastHealth > self.health then
             if not Sounds.oof:isPlaying() then
                 love.audio.play(Sounds.oof)
             end

@@ -21,23 +21,23 @@ function love.load()
     }
 
     Map = {}
+    MapThings = {}
     MapSize = 16
     for x=0, MapSize-1 do
         Map[x] = {}
+        MapThings[x] = {}
         for y=0, MapSize-1 do
             Map[x][y] = 0
         end
     end
-    MapThings = {}
     FLOOR_TILE = 0
     WALL_TILE = 1
     FIRE_TILE = 2
 
-    Map[4][4] = WALL_TILE
-    Map[11][4] = WALL_TILE
-    Map[4][11] = WALL_TILE
-    Map[11][11] = WALL_TILE
-    UpdateWalls()
+    SetTile(4,4, WALL_TILE)
+    SetTile(11,4, WALL_TILE)
+    SetTile(4,11, WALL_TILE)
+    SetTile(11,11, WALL_TILE)
 
     Timer = 0
     OceanShader = love.graphics.newShader [[
@@ -71,9 +71,18 @@ function SetTile(x,y, value)
     if x < 0 or y < 0 or x >= MapSize or y >= MapSize then return end
     Map[x][y] = value
 
+    -- if there was a visual at this tile displaying it, then destroy the old visual
+    if MapThings[x][y] then
+        MapThings[x][y].dead = true
+    end
+
+    -- add a visual just to display the tile
     if value == FIRE_TILE then
-        -- add a visual just to display the tile
-        AddToThingList(NewFireTileVisual(x,y))
+        MapThings[x][y] = AddToThingList(NewFireTileVisual(x,y))
+    end
+
+    if value == WALL_TILE then
+        MapThings[x][y] = AddToThingList(NewWall(x,y))
     end
 end
 
@@ -84,24 +93,6 @@ end
 
 function WorldToTileCoords(x,y)
     return math.floor(x/64), math.floor(y/64)
-end
-
-function UpdateWalls()
-    for i,v in pairs(ThingList) do
-        if v == MapThings[v] then
-            v.dead = true
-        end
-    end
-
-    MapThings = {}
-    for x=0, MapSize-1 do
-        for y=0, MapSize-1 do
-            if Map[x][y] == WALL_TILE then
-                local this = AddToThingList(NewWall(x*64,y*64))
-                MapThings[this] = this
-            end
-        end
-    end
 end
 
 function AddToThingList(thing)
