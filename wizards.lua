@@ -16,6 +16,16 @@ function NewWizard(x,y)
     self.moveVector = {0,0}
     self.hurtTimer = 0
 
+    -- create my cool ass outfits
+    self.drip = {}
+    self.drip[1] = love.math.random(0.6,1)
+    self.drip[2] = love.math.random(0.4,1)
+    self.drip[3] = love.math.random(0.6,1)
+    self.drip[4] = love.math.random(0.6,1)
+    self.drip[5] = self.drip[4] * ((self.drip[4] - 0.6) / 1.6 + 0.6)
+    self.drip[6] = self.drip[4] - 0.4
+    self.shade = 0.1
+
     -- create my legs (just for looks)
     self.legs = {}
     self.legs[1] = NewWizardLeg(math.pi/-4, 7, self)
@@ -137,7 +147,7 @@ function NewWizard(x,y)
         local centerx, centery = self.x, self.y - 28
 
         -- draw legs
-        love.graphics.setColor(0.25,0.25,0.3)
+        love.graphics.setColor(self.drip[1],self.drip[2],self.drip[3])
         for i,leg in pairs(self.legs) do
             leg:draw()
         end
@@ -150,19 +160,19 @@ function NewWizard(x,y)
         end
 
         -- draw cloak
-        love.graphics.setColor(0.4,0.4,0.5)
+        love.graphics.setColor(self.drip[1] - self.shade, self.drip[2] - self.shade, self.drip[3] - self.shade)
         for i=1, 8 do
             DrawOval(centerx,centery+Conversion(30,12, 1,8, i), Conversion(18,12, 1,8, i), 0.4)
         end
 
         -- draw hat
-        love.graphics.setColor(0.25,0.5,1)
+        love.graphics.setColor(self.drip[4],self.drip[5],self.drip[6])
         love.graphics.circle("fill", centerx,centery, 12)
-        love.graphics.setColor(0.4,0.4,0.5)
+        love.graphics.setColor(self.drip[1] - self.shade,self.drip[2] - self.shade,self.drip[3] - self.shade)
         DrawOval(centerx,centery-10, 28, 0.4)
         local hatwidth = 11
         local hatheight = 40
-        love.graphics.setColor(0.25,0.25,0.3)
+        love.graphics.setColor(self.drip[1],self.drip[2],self.drip[3])
         love.graphics.polygon("fill", centerx-hatwidth,centery-10, centerx+hatwidth,centery-10, centerx,centery-hatheight)
         DrawOval(centerx,centery-10, hatwidth, 0.4)
 
