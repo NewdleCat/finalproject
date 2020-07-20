@@ -17,7 +17,6 @@ function NewWizard(x,y, colorScheme)
     self.hurtTimer = 0
 
     self.colorScheme = colorScheme
-    print(self.colorScheme[1])
 
     -- create my legs (just for looks)
     self.legs = {}

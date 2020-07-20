@@ -339,9 +339,9 @@ end
 
 function GenerateColorscheme()
     return {
-        {63/255, 63/255, 76/255},
-        {102/255, 102/255, 107/255},
-        {1/4, 1/2, 1},
+        {63/255, 63/255, 76/255}, -- legs/top of hat (darker, more unsaturated version of cloak)
+        {102/255, 102/255, 107/255}, -- cloak (unsaturated color)
+        {1/4, 1/2, 1}, -- face, keep it a bright color (not skintone)
     }
 end
 
