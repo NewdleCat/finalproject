@@ -16,7 +16,7 @@ function CreateBrainList()
     local list = {}
 
     for i=1, CONTESTANT_COUNT do
-        if i == 1 then
+        if i == 1 and DevPlayerEnabled then
             -- the player is denoted as the wizard without a brain
             list[i] = nil
         else

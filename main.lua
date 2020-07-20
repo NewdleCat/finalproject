@@ -4,13 +4,20 @@ require "things"
 require "wizards"
 require "brain"
 
-function love.load()
+function love.load(args)
     love.math.setRandomSeed(os.time())
     love.window.setMode(1600, 1600*9/16, {vsync=true})
     UpdateController = 0
     Paused = false
     ShowBehaviorTree = false
     SimulationMultiplier = 1
+
+    -- if you give the program "player" as a command line argument, you can be a participant in the tournament
+    for i,v in pairs(args) do
+        if v == "player" then
+            DevPlayerEnabled = true
+        end
+    end
 
     -- load sounds that will be used in the game
     Sounds = {
@@ -127,6 +134,10 @@ function love.draw()
     love.graphics.setColor(0,0,0)
     love.graphics.print("Time: " .. math.floor(MatchTimeLimit + 0.5))
 
+    if MatchWinTime < 3 then
+        DrawBracket()
+    end
+
     -- draw the visualized behavior tree if it exists
     if ShowBehaviorTree and VisualizedTree then
         love.graphics.push()
@@ -135,6 +146,61 @@ function love.draw()
         DrawBT(VisualizedTree)
         love.graphics.pop()
     end
+end
+
+function DrawBracket()
+    local function drawWizardIcon(wizardID, centerx,centery)
+        local colorScheme = ColorList[wizardID]
+        love.graphics.setColor(unpack(colorScheme[3]))
+        love.graphics.circle("fill", centerx,centery, 12)
+        love.graphics.setColor(unpack(colorScheme[2]))
+        DrawOval(centerx,centery-10, 28, 0.4)
+        local hatwidth = 11
+        local hatheight = 40
+        love.graphics.setColor(unpack(colorScheme[1]))
+        love.graphics.polygon("fill", centerx-hatwidth,centery-10, centerx+hatwidth,centery-10, centerx,centery-hatheight)
+        DrawOval(centerx,centery-10, hatwidth, 0.4)
+    end
+
+    love.graphics.setColor(0.25,0,0.5, 0.5)
+    love.graphics.rectangle("fill", 0,0, love.graphics.getWidth(),love.graphics.getHeight())
+
+    local xvalues = {}
+    for r=1, ROUND_COUNT do
+        local count = GetContestantsAtLayer(r)
+        for i=1, count do
+            local x = Conversion(0.1,0.9, 1,count, i)*love.graphics.getWidth()
+            local y = Conversion(0.8,0.2, 1,ROUND_COUNT, r)*love.graphics.getHeight()
+
+            local lastxvalues = xvalues
+            if r == 1 then
+                xvalues[i] = x
+            else
+                x = (xvalues[i*2] + xvalues[i*2 -1])/2
+                xvalues[i] = x
+            end
+
+            if Bracket[r][math.floor((i-1)/2) +1] then
+                local wizard = Bracket[r][math.floor((i-1)/2) +1][(i-1)%2 +1]
+
+                if r-1 >= 1 then
+                    local lastMatch = Bracket[r-1][math.floor(math.floor((i-1)/2)) +1]
+                    love.graphics.setColor(1,1,1)
+                    if lastMatch[1] == wizard then
+                        --love.graphics.line(lastxvalues[])
+                    end
+                end
+
+                if wizard then
+                    drawWizardIcon(wizard, x,y)
+                end
+            end
+        end
+    end
+end
+
+function GetContestantsAtLayer(i)
+    return CONTESTANT_COUNT/(2^(i-1))
 end
 
 function DrawOval(x,y, r, squish)
@@ -161,6 +227,11 @@ function CreateColorList()
         list[i][3][1] = love.math.random()
         list[i][3][2] = love.math.random()
         list[i][3][3] = love.math.random()
+
+        -- make the player always look the same
+        if i == 1 then
+            list[i] = PlayerColors
+        end
     end
 
     return list

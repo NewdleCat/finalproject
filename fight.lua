@@ -22,7 +22,7 @@ function InitializeTournament()
     LoadMatch()
 end
 
-function NextMatch()
+function MoveWinnerToNextMatch()
     -- determine which wizard won
     local winner = CurrentlyActiveWizards[WinningWizard]
 
@@ -36,18 +36,23 @@ function NextMatch()
         print("wizard " .. winner.brainIndex .. " moves on to match " .. nextMatch .. " of round " .. RoundIndex+1)
     else
         print(winner.id .. " wins the tournament!")
-        return
     end
+end
 
+function NextMatch()
     -- move on to the next match
-    MatchIndex = MatchIndex + 1
-    if MatchIndex > #Bracket[RoundIndex] then
-        MatchIndex = 1
-        RoundIndex = RoundIndex + 1
+    if RoundIndex <= ROUND_COUNT then
+        MatchIndex = MatchIndex + 1
+        if MatchIndex > #Bracket[RoundIndex] then
+            MatchIndex = 1
+            RoundIndex = RoundIndex + 1
+        end
     end
-    LoadMatch()
 
-    print("on to match " .. MatchIndex .. " of round " .. RoundIndex)
+    if RoundIndex <= ROUND_COUNT then
+        LoadMatch()
+        print("on to match " .. MatchIndex .. " of round " .. RoundIndex)
+    end
 end
 
 function LoadMatch()
@@ -69,7 +74,7 @@ function LoadMatch()
         bot.brainIndex = wizard1
         wizard1 = bot
     else
-        ThePlayer = AddToThingList(NewPlayer(x1,y1, PlayerColors))
+        ThePlayer = AddToThingList(NewPlayer(x1,y1, ColorList[wizard1]))
         ThePlayer.brainIndex = wizard1
         wizard1 = ThePlayer
         containsPlayer = true
@@ -82,7 +87,7 @@ function LoadMatch()
         bot.brainIndex = wizard2
         wizard2 = bot
     else
-        ThePlayer = AddToThingList(NewPlayer(x2,y2, PlayerColors))
+        ThePlayer = AddToThingList(NewPlayer(x2,y2, ColorList[wizard2]))
         ThePlayer.brainIndex = wizard2
         wizard2 = ThePlayer
         containsPlayer = true
@@ -92,7 +97,7 @@ function LoadMatch()
     if containsPlayer then
         SimulationMultiplier = 1
     else
-        SimulationMultiplier = 3
+        SimulationMultiplier = 10
     end
 
     -- make the wizards enemies
@@ -117,6 +122,7 @@ function UpdateMatch()
 
     -- run the update function multiple times based on the SimulationMultiplier variable
     for i=1, SimulationMultiplier do
+        local wasMatchOver = MatchOver
 
         -- a global timer that's used for shader code
         Timer = Timer + 1/60
@@ -151,24 +157,29 @@ function UpdateMatch()
 
         -- slowly pan the camera over to the winner
         if MatchOver then
+            if not wasMatchOver then
+                MoveWinnerToNextMatch()
+            end
+
             if MatchWinTime == 5 then
                 SimulationMultiplier = 1
                 love.audio.stop(Sounds.cheering)
                 love.audio.play(Sounds.cheering)
             end
+
             MatchWinTime = MatchWinTime - 1/60
             Camera.x = Lerp(Camera.x, CurrentlyActiveWizards[WinningWizard].x - love.graphics.getWidth()*Camera.zoom/2, 0.075)
             Camera.y = Lerp(Camera.y, CurrentlyActiveWizards[WinningWizard].y - love.graphics.getHeight()*Camera.zoom/2, 0.075)
-        end
-
-        if MatchWinTime <= 0 then
-            NextMatch()
         end
 
         -- if the match goes on for too long, kill a random wizard
         MatchTimeLimit = MatchTimeLimit - 1/60
         if MatchTimeLimit <= 0 and not MatchOver then
             CurrentlyActiveWizards[Choose{1,2}].dead = true
+        end
+
+        if MatchWinTime <= 0 then
+            NextMatch()
         end
     end
 end
