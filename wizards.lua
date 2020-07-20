@@ -252,40 +252,74 @@ function NewBot(x,y)
 
     self.drawGui = function (self)
         rootNode = self.brain.root
-        local rootX, rootY = -1000, -100
+        local rootX, rootY = 1000, 1300
         love.graphics.setColor(1, 1, 1)
-        love.graphics.print(rootNode.name, rootX, rootY, 0, 3) 
+        -- love.graphics.print(rootNode.name, rootX, rootY, 0, 3) 
 
-        numChildren = #rootNode.children
-        OddEven = numChildren % 2
-        num = -math.floor(numChildren/2)
+        count = 0
+        for i, n in pairs(rootNode.children) do
+            for j,k in pairs(n.children) do
+                count = count + 1
+            end
+        end
+
+        love.graphics.print(count, 100, 100 ,0, 3)
+        
+        -- numChildren = #rootNode.children
+        OddEven = count % 2
+        num = -math.floor(count/2)
+        tmep = 1
+        prevLen = 1
+        lenDiff = 1
+
+        pxList = {}
+        pnList = {}
+        plistIndex = 1
         
         for i, n in pairs(rootNode.children) do
 
-            parentX = rootX + 100 * num * #n.name/2
+            xList = {}
+            nList = {}
+            listIndex = 1
 
-            numChildren2 = #n.children
-            OddEven2 = numChildren2 % 2
-            num2 = -math.floor(numChildren2/2)
-
-            for index, c in pairs(n.children) do
-
-                if OddEven2 == 0 and num2 == 0 then            
+            for ci, cn in pairs(n.children) do
+                if num < 0 then
+                    temp = -1
                 else
-                    love.graphics.print(c.name, parentX + 200 * num2 * #n.name/2, rootY + 200, 0, 3)
+                    temp = 1
                 end
 
-                num2 = num2 + 1
+                if prevLen ~= 1 and prevLen ~= #cn.name then
+                    lenDiff = math.abs(prevLen - #cn.name) + 1
+                end
+
+                love.graphics.print(cn.name, rootX + (400 * num) + (lenDiff) * 40 * temp, rootY + 1000, 0, 3)
+                prevLen = #cn.name
+
+                xList[listIndex] = rootX + (400 * num) + (lenDiff) * 40 * temp
+                nList[listIndex] = cn.name
+
+                listIndex = listIndex + 1
+                num = num + 1
             end
 
-            if OddEven == 0 and num == 0 then            
-            else
-                love.graphics.print(n.name, rootX + 100 * num * #n.name/2, rootY + 100, 0, 3)
+            parentX = math.floor((xList[1] + xList[#xList]) / 2)
+            love.graphics.print(n.name, parentX, rootY + 500, 0, 3)
+
+            for x = 1, #xList do
+                love.graphics.line(parentX + #n.name * 12, rootY + 550, xList[x] + #nList[x] * 12, rootY + 1000)
             end
 
-            num = num + 1
+            pxList[plistIndex] = parentX
+            pnList[plistIndex] = n.name
+            plistIndex = plistIndex + 1
         end
 
+        rootXPrint = math.floor((pxList[1] + pxList[#pxList]) / 2)
+        love.graphics.print(rootNode.name, rootXPrint, rootY, 0, 3)        
+        for x = 1, #pxList do
+            love.graphics.line(rootXPrint + #rootNode.name * 10, rootY + 50, pxList[x] + #pnList[x] * 12, rootY + 500)
+        end
     end
 
     return self

@@ -94,7 +94,7 @@ end
 
 function NewPointTowardsEnemyNode()
     local self = {}
-    self.name = "pointTowardsEnemy"
+    self.name = "pointTwrdsEn"
 
     self.query = function (self, owner, enemy)
         owner.direction = GetAngle(owner.x,owner.y, enemy.x,enemy.y)
@@ -128,7 +128,7 @@ end
 
 function NewIsTakingDamageRightNowNode()
     local self = {}
-    self.name = "isTakingDamage"
+    self.name = "isTkingDmg"
 
     self.query = function (self, owner, enemy)
         return owner.hurtTimer > 0
@@ -139,7 +139,7 @@ end
 
 function NewWalkTowardsEnemyNode()
     local self = {}
-    self.name = "walkTowardsEnemy"
+    self.name = "wlkTwrdsEn"
 
     self.query = function (self, owner, enemy)
         local frontier = {}
@@ -204,7 +204,7 @@ end
 
 function NewWalkAwayFromEnemyNode()
     local self = {}
-    self.name = "walkAwayFromEnemy"
+    self.name = "wlkAwyFrmEn"
 
     self.query = function (self, owner, enemy)
         local angle = GetAngle(owner.x,owner.y, enemy.x,enemy.y)
@@ -218,7 +218,7 @@ end
 
 function NewSnipeEnemyNode()
     local self = {}
-    self.name = "snipeEnemy"
+    self.name = "snipeEn"
 
     self.query = function (self, owner, enemy)
         owner:sniperAttack()
