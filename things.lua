@@ -251,37 +251,15 @@ function NewSniperShot(x,y, direction, owner)
     return self
 end
 
-function NewHeal(x,y)
-    local self = {}
-    self.x = x
-    self.y = y
-    self.timer = 0
-
-    love.audio.stop(Sounds.zap)
-    love.audio.play(Sounds.zap)
-
-    local tx,ty = WorldToTileCoords(self.x,self.y)
-    SetTile(tx, ty, HEAL_TILE)
-
-    self.update = function (self, dt)
-        self.timer = self.timer + dt
-        return self.timer < 5
-    end
-
-    self.draw = function (self)
-        -- love.graphics.circle("fill", self.x, self.y, 4)
-    end
-
-    return self
-end
-
-
 function NewHealTileVisual(x,y)
     local self = {}
     self.x = x
     self.y = y
     self.timer = 0
     self.points = {}
+
+    love.audio.stop(Sounds.heal)
+    love.audio.play(Sounds.heal)
 
     self.update = function (self, dt)
         self.timer = self.timer + dt
