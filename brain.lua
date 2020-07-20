@@ -12,6 +12,48 @@ function NewBrain(owner)
     return self
 end
 
+function CreateBrainList()
+    local list = {}
+
+    for i=1, CONTESTANT_COUNT do
+        if i == 1 then
+            -- the player is denoted as the wizard without a brain
+            list[i] = nil
+        else
+            list[i] = NewBrain(nil)
+
+            local brain = list[i]
+            brain.root = NewSelectorNode()
+
+            local goAway = NewSequenceNode("goAway")
+            local goTowards = NewSequenceNode("goTowards")
+            local runAwayFromDamage = NewSequenceNode("runAwyFrmDmg")
+            goAway.children = {
+                NewLineOfSightNode(),
+                NewPointTowardsEnemyNode(),
+                NewWalkAwayFromEnemyNode(),
+                NewSnipeEnemyNode(),
+            }
+            goTowards.children = {
+                NewPointTowardsEnemyNode(),
+                NewWalkTowardsEnemyNode(),
+            }
+            runAwayFromDamage.children = {
+                NewIsTakingDamageRightNowNode(),
+                NewWalkAwayFromEnemyNode(),
+            }
+
+            brain.root.children = {
+                runAwayFromDamage,
+                goAway,
+                goTowards,
+            }
+        end
+    end
+
+    return list
+end
+
 function DrawBT(rootNode)
     local rootX, rootY = 1000, 1300
     love.graphics.setColor(1, 1, 1)

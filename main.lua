@@ -25,6 +25,7 @@ function love.load()
     }
 
     Paused = false
+    ShowBehaviorTree = false
 
     love.audio.setVolume(0.2)
     Sounds.ocean:setLooping(true)
@@ -53,17 +54,89 @@ function love.load()
         }
     ]]
 
+    ROUND_COUNT = 4 -- 2^4 = 16 contestants
+    CONTESTANT_COUNT = 2^ROUND_COUNT
+    BrainList = CreateBrainList()
     FLOOR_TILE = 0
     WALL_TILE = 1
     FIRE_TILE = 2
     HEAL_TILE = 3
+
+    Bracket = {}
+    CurrentlyActiveWizards = {}
+    RoundIndex = 1
+    MatchIndex = 1
+    -- formatted like Bracket[round][match]
+    for i=1, ROUND_COUNT do
+        Bracket[i] = {}
+    end
+    for i=1, CONTESTANT_COUNT/2 do
+        Bracket[1][i] = {i*2-1, i*2}
+    end
+
+    LoadMatch()
+end
+
+function NextMatch()
+    -- determine which wizard won
+    print("next match")
+
+    -- move on to the next match
+    MatchIndex = MatchIndex + 1
+    if MatchIndex > #Bracket[RoundIndex] then
+        MatchIndex = 1
+        RoundIndex = RoundIndex + 1
+    end
+    LoadMatch()
+end
+
+function LoadMatch()
+    -- reset arena
     LoadLevelFromImage("maps/map1.png")
+
+    print(RoundIndex, MatchIndex)
+    print("#: " .. #Bracket[RoundIndex])
+
+    -- add the wizards to the scene
+
+    local match = Bracket[RoundIndex][MatchIndex]
+    local wizard1 = match[1]
+    local wizard2 = match[2]
+
+    local x1,y1 = 64*14.5, 64*14.5
+    local x2,y2 = 64*1.5, 64*1.5
+
+    if BrainList[wizard1] then
+        local bot = AddToThingList(NewBot(x1,y1, GenerateColorscheme()))
+        bot.brain = BrainList[wizard1]
+        bot.brain.owner = bot
+        wizard1 = bot
+    else
+        ThePlayer = AddToThingList(NewPlayer(x1,y1, PlayerColors))
+        wizard1 = ThePlayer
+    end
+
+    if BrainList[wizard2] then
+        local bot = AddToThingList(NewBot(x2,y2, GenerateColorscheme()))
+        bot.brain = BrainList[wizard2]
+        bot.brain.owner = bot
+        wizard2 = bot
+    else
+        ThePlayer = AddToThingList(NewPlayer(x2,y2, PlayerColors))
+        wizard2 = ThePlayer
+    end
+
+    wizard1.enemy = wizard2
+    wizard2.enemy = wizard1
+    CurrentlyActiveWizards[1] = wizard1
+    CurrentlyActiveWizards[2] = wizard2
 end
 
 function LoadLevelFromImage(imagePath)
     -- initialize the map as a 2d array, all zeroes
     Map = {}
     MapThings = {}
+    CurrentlyActiveWizards = {}
     local image = love.image.newImageData(imagePath)
     MapSize = 16
     for x=0, MapSize-1 do
@@ -80,39 +153,6 @@ function LoadLevelFromImage(imagePath)
     Camera.x = Camera.x - love.graphics.getWidth()*Camera.zoom/2
     Camera.y = Camera.y - love.graphics.getHeight()*Camera.zoom/2
     ThingList = {}
-
-    -- add the wizards to the scene
-    ThePlayer = AddToThingList(NewPlayer(64*14.5,64*14.5, GenerateColorscheme()))
-    local bot = AddToThingList(NewBot(64*1.5, 64*1.5, GenerateColorscheme()))
-    bot.brain.root = NewSelectorNode()
-
-    local goAway = NewSequenceNode("goAway")
-    local goTowards = NewSequenceNode("goTowards")
-    local runAwayFromDamage = NewSequenceNode("runAwyFrmDmg")
-    goAway.children = {
-        NewLineOfSightNode(),
-        NewPointTowardsEnemyNode(),
-        NewWalkAwayFromEnemyNode(),
-        NewSnipeEnemyNode(),
-    }
-    goTowards.children = {
-        NewPointTowardsEnemyNode(),
-        NewWalkTowardsEnemyNode(),
-    }
-    runAwayFromDamage.children = {
-        NewIsTakingDamageRightNowNode(),
-        NewWalkAwayFromEnemyNode(),
-    }
-
-    bot.brain.root.children = {
-        runAwayFromDamage,
-        goAway,
-        goTowards,
-    }
-
-    bot.enemy = ThePlayer
-
-    VisualizedTree = bot.brain.root
 
 
     -- load the image from the path and set tiles coresponding to the pixel at that position
@@ -198,6 +238,12 @@ function love.update(dt)
                 table.remove(ThingList, i)
             end
         end
+
+        for i,w in pairs(CurrentlyActiveWizards) do
+            if w.dead then
+                NextMatch()
+            end
+        end
     end
 end
 
@@ -220,6 +266,10 @@ function love.keypressed(key)
 
     if key == "space" then
         Paused = not Paused
+    end
+
+    if key == "b" then
+        ShowBehaviorTree = not ShowBehaviorTree
     end
 end
 
@@ -322,11 +372,13 @@ function love.draw()
 
     love.graphics.pop()
 
-    love.graphics.push()
-    love.graphics.scale(0.3,0.3)
-    love.graphics.translate(love.graphics.getWidth()/2, love.graphics.getHeight()*-1)
-    DrawBT(VisualizedTree)
-    love.graphics.pop()
+    if ShowBehaviorTree and VisualizedTree then
+        love.graphics.push()
+        love.graphics.scale(0.3,0.3)
+        love.graphics.translate(love.graphics.getWidth()/2, love.graphics.getHeight()*-1)
+        DrawBT(VisualizedTree)
+        love.graphics.pop()
+    end
 end
 
 function DrawOval(x,y, r, squish)
@@ -344,6 +396,12 @@ function GenerateColorscheme()
         {1/4, 1/2, 1}, -- face, keep it a bright color (not skintone)
     }
 end
+
+PlayerColors = {
+    {63/255, 63/255, 76/255}, -- legs/top of hat (darker, more unsaturated version of cloak)
+    {102/255, 102/255, 107/255}, -- cloak (unsaturated color)
+    {1/4, 1/2, 1}, -- face, keep it a bright color (not skintone)
+}
 
 -- a bunch of useful math functions for common tasks
 function Lerp(a,b,t) return (1-t)*a + t*b end
