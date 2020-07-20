@@ -1,3 +1,5 @@
+require "level"
+require "fight"
 require "things"
 require "wizards"
 require "brain"
@@ -6,7 +8,11 @@ function love.load()
     love.math.setRandomSeed(os.time())
     love.window.setMode(1600, 1600*9/16, {vsync=true})
     UpdateController = 0
+    Paused = false
+    ShowBehaviorTree = false
+    SimulationMultiplier = 1
 
+    -- load sounds that will be used in the game
     Sounds = {
         fireball = love.audio.newSource("sounds/fireball.mp3", "static"),
         boom = love.audio.newSource("sounds/boom.mp3", "static"),
@@ -24,16 +30,12 @@ function love.load()
 
         ocean = love.audio.newSource("sounds/ocean2.mp3", "stream"),
     }
-
-    Paused = false
-    ShowBehaviorTree = false
-    SimulationMultiplier = 1
-
     love.audio.setVolume(0.2)
     Sounds.ocean:setLooping(true)
     Sounds.ocean:setVolume(0.5)
     Sounds.ocean:play()
 
+    -- load the shader that is used for the ocean
     Timer = 0
     OceanShader = love.graphics.newShader [[
         uniform float timer;
@@ -58,187 +60,7 @@ function love.load()
 
     ROUND_COUNT = 4 -- 2^4 = 16 contestants
     CONTESTANT_COUNT = 2^ROUND_COUNT
-    BrainList = CreateBrainList()
-    ColorList = CreateColorList()
-    FLOOR_TILE = 0
-    WALL_TILE = 1
-    FIRE_TILE = 2
-    HEAL_TILE = 3
-
-    Bracket = {}
-    CurrentlyActiveWizards = {}
-    RoundIndex = 1
-    MatchIndex = 1
-    -- formatted like Bracket[round][match]
-    for i=1, ROUND_COUNT do
-        Bracket[i] = {}
-    end
-    for i=1, CONTESTANT_COUNT/2 do
-        Bracket[1][i] = {i*2-1, i*2}
-    end
-
-    LoadMatch()
-end
-
-function NextMatch()
-    -- determine which wizard won
-    local winner = CurrentlyActiveWizards[WinningWizard]
-
-    -- move the winner into the next match
-    if RoundIndex+1 <= ROUND_COUNT then
-        local nextMatch = math.floor((MatchIndex-1)/2) +1
-        if not Bracket[RoundIndex+1][nextMatch] then
-            Bracket[RoundIndex+1][nextMatch] = {}
-        end
-        table.insert(Bracket[RoundIndex+1][nextMatch], winner.id)
-        print("wizard " .. winner.brainIndex .. " moves on to match " .. nextMatch .. " of round " .. RoundIndex+1)
-    else
-        print(winner.id .. " wins the tournament!")
-        return
-    end
-
-    -- move on to the next match
-    MatchIndex = MatchIndex + 1
-    if MatchIndex > #Bracket[RoundIndex] then
-        MatchIndex = 1
-        RoundIndex = RoundIndex + 1
-    end
-    LoadMatch()
-
-    print("on to match " .. MatchIndex .. " of round " .. RoundIndex)
-end
-
-function LoadMatch()
-    -- reset arena
-    LoadLevelFromImage("maps/map1.png")
-
-    -- add the wizards to the scene
-    local match = Bracket[RoundIndex][MatchIndex]
-    local wizard1 = match[1]
-    local wizard2 = match[2]
-    local x1,y1 = 64*14.5, 64*14.5
-    local x2,y2 = 64*1.5, 64*1.5
-    local containsPlayer = false
-
-    if BrainList[wizard1] then
-        local bot = AddToThingList(NewBot(x1,y1, ColorList[wizard1]))
-        bot.brain = BrainList[wizard1]
-        bot.brain.owner = bot
-        bot.brainIndex = wizard1
-        wizard1 = bot
-    else
-        ThePlayer = AddToThingList(NewPlayer(x1,y1, PlayerColors))
-        ThePlayer.brainIndex = wizard1
-        wizard1 = ThePlayer
-        containsPlayer = true
-    end
-
-    if BrainList[wizard2] then
-        local bot = AddToThingList(NewBot(x2,y2, ColorList[wizard2]))
-        bot.brain = BrainList[wizard2]
-        bot.brain.owner = bot
-        bot.brainIndex = wizard2
-        wizard2 = bot
-    else
-        ThePlayer = AddToThingList(NewPlayer(x2,y2, PlayerColors))
-        ThePlayer.brainIndex = wizard2
-        wizard2 = ThePlayer
-        containsPlayer = true
-    end
-
-    -- fast forward matches where the player is not involved
-    if containsPlayer then
-        SimulationMultiplier = 1
-    else
-        SimulationMultiplier = 3
-    end
-
-    -- make the wizards enemies
-    wizard1.enemy = wizard2
-    wizard2.enemy = wizard1
-
-    -- bookkeeping so the game knows who the wizards are
-    CurrentlyActiveWizards[1] = wizard1
-    CurrentlyActiveWizards[1].id = match[1]
-    CurrentlyActiveWizards[2] = wizard2
-    CurrentlyActiveWizards[2].id = match[2]
-
-    -- set a time limit for the match and how long the victory animation should be
-    MatchTimeLimit = 60
-    MatchWinTime = 5
-    WinningWizard = nil
-    MatchOver = false
-end
-
-function LoadLevelFromImage(imagePath)
-    -- initialize the map as a 2d array, all zeroes
-    Map = {}
-    MapThings = {}
-    CurrentlyActiveWizards = {}
-    local image = love.image.newImageData(imagePath)
-    MapSize = 16
-    for x=0, MapSize-1 do
-        Map[x] = {}
-        MapThings[x] = {}
-        for y=0, MapSize-1 do
-            Map[x][y] = 0
-        end
-    end
-
-    -- reset the camera
-    -- and list of all objects in the scene (ThingList)
-    Camera = {x=64*8,y=64*8, zoom=1/0.8}
-    Camera.x = Camera.x - love.graphics.getWidth()*Camera.zoom/2
-    Camera.y = Camera.y - love.graphics.getHeight()*Camera.zoom/2
-    ThingList = {}
-
-    -- load the image from the path and set tiles coresponding to the pixel at that position
-    for x=0, MapSize-1 do
-        for y=0, MapSize-1 do
-            local r,g,b,a = image:getPixel(x,y)
-
-            if r == 0 and g == 0 and b == 0 then
-                SetTile(x,y, WALL_TILE)
-            end
-        end
-    end
-end
-
-function GetTile(x,y)
-    if x < 0 or y < 0 or x >= MapSize or y >= MapSize then return false end
-    return Map[x][y]
-end
-
-function SetTile(x,y, value)
-    if x < 0 or y < 0 or x >= MapSize or y >= MapSize then return end
-    Map[x][y] = value
-
-    -- if there was a visual at this tile displaying it, then destroy the old visual
-    if MapThings[x][y] then
-        MapThings[x][y].dead = true
-    end
-
-    -- add a visual just to display the tile
-    if value == FIRE_TILE then
-        MapThings[x][y] = AddToThingList(NewFireTileVisual(x,y))
-    end
-
-    if value == WALL_TILE then
-        MapThings[x][y] = AddToThingList(NewWall(x,y))
-    end
-
-    if value == HEAL_TILE then
-        MapThings[x][y] = AddToThingList(NewHealTileVisual(x, y))
-    end
-end
-
-function IsTileWalkable(x,y)
-    if x < 0 or y < 0 or x >= MapSize or y >= MapSize then return false end
-    return Map[x][y] ~= WALL_TILE
-end
-
-function WorldToTileCoords(x,y)
-    return math.floor(x/64), math.floor(y/64)
+    InitializeTournament()
 end
 
 function AddToThingList(thing)
@@ -247,6 +69,7 @@ function AddToThingList(thing)
 end
 
 function love.update(dt)
+    -- if the game is paused, just don't update anything
     if Paused then return end
 
     -- control the update cycle to always run at 60 times per second
@@ -260,62 +83,7 @@ function love.update(dt)
     end
 
     while UpdateController > 1/60 do
-        UpdateController = UpdateController - 1/60
-
-        for i=1, SimulationMultiplier do
-            -- a global timer that's used for shader code
-            Timer = Timer + 1/60
-
-            -- update all things in the ThingList
-            for i,thing in pairs(ThingList) do
-                -- if this thing's update function returns false, remove it from the list
-                if not thing:update(1/60) or thing.dead then
-                    -- if this thing has a death function, do it
-                    thing.dead = true
-
-                    if thing.onDeath then
-                        thing:onDeath()
-                    end
-
-                    -- remove it from the list of things to be updated and drawn
-                    table.remove(ThingList, i)
-                end
-
-                -- check for dead wizards
-                -- do this inside the thing update loop so that if two wizards die on the same frame
-                -- one is caught before the other and a winner is still found
-                MatchOver = false
-                if CurrentlyActiveWizards[1].dead then
-                    WinningWizard = 2
-                    MatchOver = true
-                elseif CurrentlyActiveWizards[2].dead then
-                    WinningWizard = 1
-                    MatchOver = true
-                end
-            end
-
-            -- slowly pan the camera over to the winner
-            if MatchOver then
-                if MatchWinTime == 5 then
-                    SimulationMultiplier = 1
-                    love.audio.stop(Sounds.cheering)
-                    love.audio.play(Sounds.cheering)
-                end
-                MatchWinTime = MatchWinTime - 1/60
-                Camera.x = Lerp(Camera.x, CurrentlyActiveWizards[WinningWizard].x - love.graphics.getWidth()*Camera.zoom/2, 0.075)
-                Camera.y = Lerp(Camera.y, CurrentlyActiveWizards[WinningWizard].y - love.graphics.getHeight()*Camera.zoom/2, 0.075)
-            end
-
-            if MatchWinTime <= 0 then
-                NextMatch()
-            end
-
-            -- if the match goes on for too long, kill a random wizard
-            MatchTimeLimit = MatchTimeLimit - 1/60
-            if MatchTimeLimit <= 0 and not MatchOver then
-                CurrentlyActiveWizards[Choose{1,2}].dead = true
-            end
-        end
+        UpdateMatch()
     end
 end
 
@@ -336,10 +104,12 @@ function love.keypressed(key)
         end
     end
 
+    -- space toggles pause
     if key == "space" then
         Paused = not Paused
     end
 
+    -- b toggles showing the behavior tree
     if key == "b" then
         ShowBehaviorTree = not ShowBehaviorTree
     end
@@ -349,104 +119,15 @@ function love.wheelmoved(x,y)
     Camera.zoom = Camera.zoom - y/10
 end
 
-function IsInsideArena(x,y)
-    return x >= 0 and y >= 0 and x <= 16*64 and y <= 16*64
-end
-
 function love.draw()
-    -- move and scale the game according to the camera
-    love.graphics.push()
-    love.graphics.scale(1/Camera.zoom,1/Camera.zoom)
-    love.graphics.translate(math.floor(-1*Camera.x),math.floor(-1*Camera.y))
+    -- draw the fight
+    DrawMatch()
 
-    -- draw the ocean
-    OceanShader:send("timer", Timer)
-    OceanShader:send("camerax", Camera.x)
-    OceanShader:send("cameray", Camera.y)
-    OceanShader:send("zoom", Camera.zoom)
-    love.graphics.setShader(OceanShader)
-    love.graphics.setColor(0,0.25,0.6)
-    love.graphics.rectangle("fill", Camera.x,Camera.y, math.ceil(love.graphics.getWidth()*Camera.zoom)+4,math.ceil(love.graphics.getHeight()*Camera.zoom)+4)
-    love.graphics.setShader()
-
-    -- draw the arena
-    love.graphics.setLineWidth(8)
-    local tileSize = 64
-    love.graphics.stencil(function () love.graphics.rectangle("fill", 0,0, 16*tileSize,16*tileSize) end, "replace", 0)
-    for x=1, 16 do
-        for y=1, 20 do
-            if y < 17 then
-                local tile = Map[x-1][y-1]
-                local dx,dy = (x-1)*tileSize, (y-1)*tileSize
-                love.graphics.stencil(function () love.graphics.rectangle("fill", dx,dy,tileSize,tileSize) end, "replace", 1, true)
-                love.graphics.setColor(0.425,0.425,0.425)
-                love.graphics.rectangle("line", dx,dy, tileSize,tileSize)
-                love.graphics.setColor(0.5,0.5,0.5)
-                love.graphics.rectangle("fill", dx,dy, tileSize,tileSize)
-            else
-                local alpha = Conversion(1,0, 17,20, y)
-                love.graphics.setColor(0.2,0.2,0.2, alpha)
-                love.graphics.rectangle("line", (x-1)*tileSize,(y-1)*tileSize, tileSize,tileSize/2)
-                love.graphics.setColor(0.3,0.3,0.3, alpha)
-                love.graphics.rectangle("fill", (x-1)*tileSize,(y-1)*tileSize, tileSize,tileSize/2)
-
-                local y = y+0.5
-                local alpha = Conversion(1,0, 17,20, y)
-                love.graphics.setColor(0.2,0.2,0.2, alpha)
-                love.graphics.rectangle("line", (x-1)*tileSize,(y-1)*tileSize, tileSize,tileSize/2)
-                love.graphics.setColor(0.3,0.3,0.3, alpha)
-                love.graphics.rectangle("fill", (x-1)*tileSize,(y-1)*tileSize, tileSize,tileSize/2)
-            end
-        end
-    end
-
-    -- make things "farther away" (bigger y value) go behind other things
-    table.sort(ThingList, function (a,b)
-        return a.y < b.y
-    end)
-
-    -- draw all things in the ThingList
-    love.graphics.setLineWidth(5)
-    for i,thing in pairs(ThingList) do
-        love.graphics.setColor(1,1,1)
-        thing:draw()
-    end
-
-    -- draw the shadows on top of the map and the things
-    for x=0, 15 do
-        for y=0, 15 do
-            -- draw wall shadows
-            local dx,dy = x*tileSize, y*tileSize
-            love.graphics.setColor(0.1,0.1,0.1, 0.5)
-            -- bottom right triangle
-            if IsTileWalkable(x,y+1) then
-                if GetTile(x-1,y+1) == WALL_TILE or GetTile(x,y+1) == WALL_TILE then
-                    love.graphics.polygon("fill", dx,dy+tileSize, dx+tileSize,dy+tileSize, dx+tileSize,dy)
-                end
-            end
-
-            if (IsTileWalkable(x,y) and IsTileWalkable(x,y+1))
-            or (not IsTileWalkable(x-1,y+1) and not IsTileWalkable(x,y) and IsTileWalkable(x,y+1)) then
-                -- top left triangle
-                if GetTile(x-1,y) == WALL_TILE or GetTile(x-1, y+1) == WALL_TILE then
-                    love.graphics.polygon("fill", dx,dy, dx+tileSize,dy, dx,dy+tileSize)
-                end
-            end
-        end
-    end
-
-    -- draw the health bars on top of everything else
-    for i,thing in pairs(ThingList) do
-        if thing.drawGui then
-            thing:drawGui()
-        end
-    end
-
-    love.graphics.pop()
-
+    -- draw the time remaining in the upper left corner
     love.graphics.setColor(0,0,0)
     love.graphics.print("Time: " .. math.floor(MatchTimeLimit + 0.5))
 
+    -- draw the visualized behavior tree if it exists
     if ShowBehaviorTree and VisualizedTree then
         love.graphics.push()
         love.graphics.scale(0.3,0.3)
