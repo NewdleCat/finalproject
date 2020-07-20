@@ -422,8 +422,10 @@ function NewWalkTowardsEnemyNodeAStar()
         end
 
         -- go back until at 2nd node
-        while nextNode.parent.parent do
-            nextNode = nextNode.parent
+        while nextNode.parent do
+            while nextNode.parent.parent do
+                nextNode = nextNode.parent
+            end
         end
 
         -- get move to next node in the queue
