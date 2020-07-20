@@ -40,8 +40,8 @@ function CreateBrainList()
 
                 for c=1, childrenCount do
                     local node = Choose {
-                        --NewWalkTowardsEnemyNode,
-                        NewWalkTowardsEnemyNodeAStar,
+                        NewWalkTowardsEnemyNode,
+                        --NewWalkTowardsEnemyNodeAStar,
                         --NewWalkAwayFromEnemyNode,
                         NewSnipeEnemyNode,
                         NewZapEnemyNode,
@@ -367,7 +367,7 @@ function NewWalkTowardsEnemyNodeAStar()
         local frontier = {}
         local checked = {}
         local costSoFar = {}
-        
+
         for i=0, 17 do
             checked[i] = {}
             costSoFar[i] = {}
@@ -377,7 +377,7 @@ function NewWalkTowardsEnemyNodeAStar()
         local nextNode = nil
         table.insert(frontier, {ox,oy, cost=Distance(ox,oy, gx,gy), parent=nil})
         costSoFar[ox][oy] = 0
-        
+
         -- astar implementation
         while true do
             -- pop off queue
