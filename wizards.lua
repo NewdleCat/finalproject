@@ -117,7 +117,7 @@ function NewWizard(x,y, colorScheme)
         self.y = self.y + self.ySpeed
 
         -- die if out of health
-        return self.health > 0
+        return self.health > 0 or MatchOver
     end
 
     self.onDeath = function (self)
@@ -175,6 +175,9 @@ function NewWizard(x,y, colorScheme)
     end
 
     self.drawGui = function (self)
+        -- don't draw the health bar if the match is over
+        if MatchOver then return end
+
         -- draw health bar
         local width = 120
         love.graphics.setColor(1,0,0.2)

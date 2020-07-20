@@ -167,6 +167,7 @@ function LoadMatch()
     MatchTimeLimit = 60
     MatchWinTime = 5
     WinningWizard = nil
+    MatchOver = false
 end
 
 function LoadLevelFromImage(imagePath)
@@ -279,20 +280,22 @@ function love.update(dt)
                     -- remove it from the list of things to be updated and drawn
                     table.remove(ThingList, i)
                 end
-            end
 
-            -- check for dead wizards
-            local matchOver = false
-            if CurrentlyActiveWizards[1].dead then
-                WinningWizard = 2
-                matchOver = true
-            elseif CurrentlyActiveWizards[2].dead then
-                WinningWizard = 1
-                matchOver = true
+                -- check for dead wizards
+                -- do this inside the thing update loop so that if two wizards die on the same frame
+                -- one is caught before the other and a winner is still found
+                MatchOver = false
+                if CurrentlyActiveWizards[1].dead then
+                    WinningWizard = 2
+                    MatchOver = true
+                elseif CurrentlyActiveWizards[2].dead then
+                    WinningWizard = 1
+                    MatchOver = true
+                end
             end
 
             -- slowly pan the camera over to the winner
-            if matchOver then
+            if MatchOver then
                 if MatchWinTime == 5 then
                     SimulationMultiplier = 1
                     love.audio.stop(Sounds.cheering)
@@ -309,7 +312,7 @@ function love.update(dt)
 
             -- if the match goes on for too long, kill a random wizard
             MatchTimeLimit = MatchTimeLimit - 1/60
-            if MatchTimeLimit <= 0 and not matchOver then
+            if MatchTimeLimit <= 0 and not MatchOver then
                 CurrentlyActiveWizards[Choose{1,2}].dead = true
             end
         end
