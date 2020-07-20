@@ -3,6 +3,7 @@ require "wizards"
 require "brain"
 
 function love.load()
+    love.math.setRandomSeed(os.time())
     love.window.setMode(1600, 1600*9/16, {vsync=true})
     UpdateController = 0
 
