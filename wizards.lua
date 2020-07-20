@@ -1,6 +1,6 @@
 -- a function that acts like a class
 -- it returns an instance of its class when it's called
-function NewWizard(x,y)
+function NewWizard(x,y, colorScheme)
     local self = {}
     self.x = x
     self.y = y
@@ -15,6 +15,8 @@ function NewWizard(x,y)
     self.living = true
     self.moveVector = {0,0}
     self.hurtTimer = 0
+
+    self.colorScheme = colorScheme
 
     -- create my legs (just for looks)
     self.legs = {}
@@ -115,7 +117,7 @@ function NewWizard(x,y)
         self.y = self.y + self.ySpeed
 
         -- die if out of health
-        return self.health > 0
+        return self.health > 0 or MatchOver
     end
 
     self.onDeath = function (self)
@@ -137,7 +139,7 @@ function NewWizard(x,y)
         local centerx, centery = self.x, self.y - 28
 
         -- draw legs
-        love.graphics.setColor(0.25,0.25,0.3)
+        love.graphics.setColor(unpack(self.colorScheme[1]))
         for i,leg in pairs(self.legs) do
             leg:draw()
         end
@@ -150,19 +152,19 @@ function NewWizard(x,y)
         end
 
         -- draw cloak
-        love.graphics.setColor(0.4,0.4,0.5)
+        love.graphics.setColor(unpack(self.colorScheme[2]))
         for i=1, 8 do
             DrawOval(centerx,centery+Conversion(30,12, 1,8, i), Conversion(18,12, 1,8, i), 0.4)
         end
 
         -- draw hat
-        love.graphics.setColor(0.25,0.5,1)
+        love.graphics.setColor(unpack(self.colorScheme[3]))
         love.graphics.circle("fill", centerx,centery, 12)
-        love.graphics.setColor(0.4,0.4,0.5)
+        love.graphics.setColor(unpack(self.colorScheme[2]))
         DrawOval(centerx,centery-10, 28, 0.4)
         local hatwidth = 11
         local hatheight = 40
-        love.graphics.setColor(0.25,0.25,0.3)
+        love.graphics.setColor(unpack(self.colorScheme[1]))
         love.graphics.polygon("fill", centerx-hatwidth,centery-10, centerx+hatwidth,centery-10, centerx,centery-hatheight)
         DrawOval(centerx,centery-10, hatwidth, 0.4)
 
@@ -173,6 +175,9 @@ function NewWizard(x,y)
     end
 
     self.drawGui = function (self)
+        -- don't draw the health bar if the match is over
+        if MatchOver then return end
+
         -- draw health bar
         local width = 120
         love.graphics.setColor(1,0,0.2)
@@ -211,7 +216,8 @@ function NewWizard(x,y)
     self.healSpell = function (self)
         if self.mana >= 50 then
             self.mana = self.mana - 50
-            AddToThingList(NewHeal(self.x, self.y))
+            local x,y = WorldToTileCoords(self.x,self.y)
+            SetTile(x,y, HEAL_TILE)
         end
     end
 
@@ -235,26 +241,41 @@ function NewWizardLeg(angle, radius, owner)
     return self
 end
 
-function NewBot(x,y)
-    local self = NewWizard(x,y)
+function NewBot(x,y, colorScheme)
+    local self = NewWizard(x,y, colorScheme)
     self.brain = NewBrain(self)
 
     self.parentUpdate = self.update
     self.update = function (self, dt)
+        -- default to not moving
         self.moveVector[1] = 0
         self.moveVector[2] = 0
+
+        -- if the mouse is over me, visualize my brain
+        local mx,my = GetMousePosition()
+        if Distance(mx,my, self.x,self.y) < 64 then
+            VisualizedTree = self.brain.root
+        end
+
+        -- if the enemy isn't dead, do my behavior
         if not self.enemy.dead then
+            -- always face the enemy
+            self.direction = GetAngle(self.x,self.y, self.enemy.x,self.enemy.y)
+
+            -- query my behavior tree
             self.brain:query()
         end
+
+        -- return if i should still be alive, and call the parent class update function
         return self:parentUpdate(dt)
     end
 
     return self
 end
 
-function NewPlayer(x,y)
+function NewPlayer(x,y, colorScheme)
     -- this acts as inheritence, inheriting the stuff that the base Wizard class has
-    local self = NewWizard(x,y)
+    local self = NewWizard(x,y, colorScheme)
     self.name = "playerwizard"
 
     -- store the inherited update so that we can call it in our new update function
@@ -280,7 +301,7 @@ function NewPlayer(x,y)
         local stillAlive = self:parentUpdate(dt)
 
         -- always point towards the mouse
-        local mousex,mousey = love.mouse.getX()*Camera.zoom + Camera.x, love.mouse.getY()*Camera.zoom + Camera.y
+        local mousex, mousey = GetMousePosition()
         self.direction = math.pi + math.atan2((self.y-14) - mousey, self.x - mousex)
 
         -- center the camera on me
