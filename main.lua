@@ -15,6 +15,7 @@ function love.load()
         oof = love.audio.newSource("sounds/oof.mp3", "static"),
         sniper = love.audio.newSource("sounds/sniper.mp3", "static"),
         heal = love.audio.newSource("sounds/heal.mp3", "static"),
+        cheering = love.audio.newSource("sounds/cheering.mp3", "stream"),
 
         step1 = love.audio.newSource("sounds/step1.mp3", "static"),
         step2 = love.audio.newSource("sounds/step2.mp3", "static"),
@@ -164,7 +165,7 @@ function LoadMatch()
 
     -- set a time limit for the match and how long the victory animation should be
     MatchTimeLimit = 60
-    MatchWinTime = 3
+    MatchWinTime = 5
     WinningWizard = nil
 end
 
@@ -260,10 +261,10 @@ function love.update(dt)
     while UpdateController > 1/60 do
         UpdateController = UpdateController - 1/60
 
-        -- a global timer that's used for shader code
-        Timer = Timer + 1/60
-
         for i=1, SimulationMultiplier do
+            -- a global timer that's used for shader code
+            Timer = Timer + 1/60
+
             -- update all things in the ThingList
             for i,thing in pairs(ThingList) do
                 -- if this thing's update function returns false, remove it from the list
@@ -292,6 +293,11 @@ function love.update(dt)
 
             -- slowly pan the camera over to the winner
             if matchOver then
+                if MatchWinTime == 5 then
+                    SimulationMultiplier = 1
+                    love.audio.stop(Sounds.cheering)
+                    love.audio.play(Sounds.cheering)
+                end
                 MatchWinTime = MatchWinTime - 1/60
                 Camera.x = Lerp(Camera.x, CurrentlyActiveWizards[WinningWizard].x - love.graphics.getWidth()*Camera.zoom/2, 0.075)
                 Camera.y = Lerp(Camera.y, CurrentlyActiveWizards[WinningWizard].y - love.graphics.getHeight()*Camera.zoom/2, 0.075)
