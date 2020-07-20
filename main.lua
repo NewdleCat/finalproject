@@ -64,7 +64,9 @@ function LoadLevelFromImage(imagePath)
     -- initialize the map as a 2d array, all zeroes
     Map = {}
     MapThings = {}
-    MapSize = 16
+    local image = love.image.newImageData(imagePath)
+    wide,high = image:getDimensions()
+    MapSize = wide
     for x=0, MapSize-1 do
         Map[x] = {}
         MapThings[x] = {}
@@ -113,7 +115,6 @@ function LoadLevelFromImage(imagePath)
 
 
     -- load the image from the path and set tiles coresponding to the pixel at that position
-    local image = love.image.newImageData(imagePath)
     for x=0, MapSize-1 do
         for y=0, MapSize-1 do
             local r,g,b,a = image:getPixel(x,y)
