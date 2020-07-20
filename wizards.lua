@@ -257,7 +257,7 @@ function NewBot(x,y, colorScheme)
         -- if the enemy isn't dead, do my behavior
         if not self.enemy.dead then
             -- always face the enemy
-            self.direction = GetAngle(self.x,self.y, self.enemy.x,self.enemy.y)
+            self.direction = Lerp(self.direction, GetAngle(self.x,self.y, self.enemy.x,self.enemy.y), 0.05)
 
             -- query my behavior tree
             self.brain:query()

@@ -44,6 +44,8 @@ function CreateBrainList()
                         --NewWalkAwayFromEnemyNode,
                         NewSnipeEnemyNode,
                         NewZapEnemyNode,
+                        NewFireballEnemyNode,
+                        NewHealNode,
                     }
 
                     -- these test if conditions are met
@@ -373,7 +375,7 @@ end
 
 function NewSnipeEnemyNode()
     local self = {}
-    self.name = "snipeEn"
+    self.name = "snipe"
 
     self.query = function (self, owner, enemy)
         owner:sniperAttack()
@@ -389,6 +391,30 @@ function NewZapEnemyNode()
 
     self.query = function (self, owner, enemy)
         owner:zapAttack()
+        return true
+    end
+
+    return self
+end
+
+function NewFireballEnemyNode()
+    local self = {}
+    self.name = "fireball"
+
+    self.query = function (self, owner, enemy)
+        owner:fireballAttack()
+        return true
+    end
+
+    return self
+end
+
+function NewHealNode()
+    local self = {}
+    self.name = "heal"
+
+    self.query = function (self, owner, enemy)
+        owner:healSpell()
         return true
     end
 

@@ -26,6 +26,7 @@ function love.load()
 
     Paused = false
     ShowBehaviorTree = false
+    SimulationMultiplier = 1
 
     love.audio.setVolume(0.2)
     Sounds.ocean:setLooping(true)
@@ -118,9 +119,9 @@ function LoadMatch()
     local match = Bracket[RoundIndex][MatchIndex]
     local wizard1 = match[1]
     local wizard2 = match[2]
-
     local x1,y1 = 64*14.5, 64*14.5
     local x2,y2 = 64*1.5, 64*1.5
+    local containsPlayer = false
 
     if BrainList[wizard1] then
         local bot = AddToThingList(NewBot(x1,y1, ColorList[wizard1]))
@@ -132,6 +133,7 @@ function LoadMatch()
         ThePlayer = AddToThingList(NewPlayer(x1,y1, PlayerColors))
         ThePlayer.brainIndex = wizard1
         wizard1 = ThePlayer
+        containsPlayer = true
     end
 
     if BrainList[wizard2] then
@@ -144,6 +146,15 @@ function LoadMatch()
         ThePlayer = AddToThingList(NewPlayer(x2,y2, PlayerColors))
         ThePlayer.brainIndex = wizard2
         wizard2 = ThePlayer
+        containsPlayer = true
+    end
+
+    -- fast forward matches where the player is not involved
+
+    if containsPlayer then
+        SimulationMultiplier = 1
+    else
+        SimulationMultiplier = 3
     end
 
     wizard1.enemy = wizard2
@@ -245,25 +256,27 @@ function love.update(dt)
         -- a global timer that's used for shader code
         Timer = Timer + 1/60
 
-        -- update all things in the ThingList
-        for i,thing in pairs(ThingList) do
-            -- if this thing's update function returns false, remove it from the list
-            if not thing:update(1/60) or thing.dead then
-                -- if this thing has a death function, do it
-                thing.dead = true
+        for i=1, SimulationMultiplier do
+            -- update all things in the ThingList
+            for i,thing in pairs(ThingList) do
+                -- if this thing's update function returns false, remove it from the list
+                if not thing:update(1/60) or thing.dead then
+                    -- if this thing has a death function, do it
+                    thing.dead = true
 
-                if thing.onDeath then
-                    thing:onDeath()
+                    if thing.onDeath then
+                        thing:onDeath()
+                    end
+
+                    -- remove it from the list of things to be updated and drawn
+                    table.remove(ThingList, i)
                 end
-
-                -- remove it from the list of things to be updated and drawn
-                table.remove(ThingList, i)
             end
-        end
 
-        for i,w in pairs(CurrentlyActiveWizards) do
-            if w.dead then
-                NextMatch()
+            for i,w in pairs(CurrentlyActiveWizards) do
+                if w.dead then
+                    NextMatch()
+                end
             end
         end
     end
