@@ -83,9 +83,9 @@ function LoadLevelFromImage(imagePath)
     local bot = AddToThingList(NewBot(64*1.5, 64*1.5))
     bot.brain.root = NewSelectorNode()
 
-    local goAway = NewSequenceNode()
-    local goTowards = NewSequenceNode()
-    local runAwayFromDamage = NewSequenceNode()
+    local goAway = NewSequenceNode("goAway")
+    local goTowards = NewSequenceNode("goTowards")
+    local runAwayFromDamage = NewSequenceNode("runAwyFrmDmg")
     goAway.children = {
         NewLineOfSightNode(),
         NewPointTowardsEnemyNode(),

@@ -3,6 +3,7 @@ function NewBrain(owner)
     local self = {}
     self.owner = owner
     self.root = nil
+    self.name = "root"
 
     self.query = function (self)
         return self.root:query(self.owner, self.owner.enemy)
@@ -29,9 +30,10 @@ end
 -- sniper
 -- zap
 
-function NewSequenceNode()
+function NewSequenceNode(name)
     local self = {}
     self.children = {}
+    self.name = name
 
     self.query = function (self, owner, enemy)
         -- go through children in order, querying them
@@ -52,6 +54,7 @@ end
 function NewSelectorNode()
     local self = {}
     self.children = {}
+    self.name = "selector"
 
     self.query = function (self, owner, enemy)
         -- go through children in order, querying them
@@ -73,6 +76,7 @@ end
 function NewInterrogateChildrenNode()
     local self = {}
     self.children = {}
+    self.name = "interrogate"
 
     self.query = function (self, owner, enemy)
         -- go through children in order, querying them
@@ -90,6 +94,7 @@ end
 
 function NewPointTowardsEnemyNode()
     local self = {}
+    self.name = "pointTowardsEnemy"
 
     self.query = function (self, owner, enemy)
         owner.direction = GetAngle(owner.x,owner.y, enemy.x,enemy.y)
@@ -101,6 +106,7 @@ end
 
 function NewLineOfSightNode()
     local self = {}
+    self.name = "lineOfSight"
 
     self.query = function (self, owner, enemy)
         local x,y = owner.x,owner.y
@@ -122,6 +128,7 @@ end
 
 function NewIsTakingDamageRightNowNode()
     local self = {}
+    self.name = "isTakingDamage"
 
     self.query = function (self, owner, enemy)
         return owner.hurtTimer > 0
@@ -132,6 +139,7 @@ end
 
 function NewWalkTowardsEnemyNode()
     local self = {}
+    self.name = "walkTowardsEnemy"
 
     self.query = function (self, owner, enemy)
         local frontier = {}
@@ -196,6 +204,7 @@ end
 
 function NewWalkAwayFromEnemyNode()
     local self = {}
+    self.name = "walkAwayFromEnemy"
 
     self.query = function (self, owner, enemy)
         local angle = GetAngle(owner.x,owner.y, enemy.x,enemy.y)
@@ -209,6 +218,7 @@ end
 
 function NewSnipeEnemyNode()
     local self = {}
+    self.name = "snipeEnemy"
 
     self.query = function (self, owner, enemy)
         owner:sniperAttack()
