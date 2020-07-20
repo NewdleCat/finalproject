@@ -94,7 +94,8 @@ function LoadLevelFromImage(imagePath)
     }
     goTowards.children = {
         NewPointTowardsEnemyNode(),
-        NewWalkTowardsEnemyNode(),
+        -- NewWalkTowardsEnemyNode(),
+        NewWalkTowardsEnemyNodeAStar(),
     }
     runAwayFromDamage.children = {
         NewIsTakingDamageRightNowNode(),

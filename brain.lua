@@ -194,6 +194,82 @@ function NewWalkTowardsEnemyNode()
     return self
 end
 
+function NewWalkTowardsEnemyNodeAStar()
+    local self = {}
+
+    self.query = function (self, owner, enemy)
+        local frontier = {}
+        local checked = {}
+        local costSoFar = {}
+        
+        for i=0, 17 do
+            checked[i] = {}
+            costSoFar[i] = {}
+        end
+        local ox,oy = WorldToTileCoords(owner.x, owner.y)
+        local gx,gy = WorldToTileCoords(enemy.x, enemy.y)
+        local nextNode = nil
+        table.insert(frontier, {ox,oy, cost=Distance(ox,oy, gx,gy), parent=nil})
+        costSoFar[ox][oy] = 0
+        
+        -- astar implementation
+        while true do
+            -- pop off queue
+            local this = table.remove(frontier, 1)
+
+            -- if this is the goal, end loop
+            if this[1] == gx and this[2] == gy then
+                nextNode = this
+                break
+            end
+
+            -- add neighbors
+            if IsTileWalkable(this[1]-1, this[2]) and (not checked[this[1]-1][this[2]] or (Distance(this[1]-1, this[2], gx,gy) + costSoFar[this[1]][this[2]]) < costSoFar[this[1]-1][this[2]])then
+                checked[this[1]-1][this[2]] = true
+                local newCost = Distance(this[1]-1, this[2], gx,gy) + costSoFar[this[1]][this[2]]
+                costSoFar[this[1]-1][this[2]] = newCost
+                table.insert(frontier, {this[1]-1, this[2], cost=newCost, parent=this})
+            end
+            if IsTileWalkable(this[1]+1, this[2]) and (not checked[this[1]+1][this[2]] or (Distance(this[1]+1, this[2], gx,gy) + costSoFar[this[1]][this[2]]) < costSoFar[this[1]+1][this[2]])then
+                checked[this[1]+1][this[2]] = true
+                local newCost = Distance(this[1]+1, this[2], gx,gy) + costSoFar[this[1]][this[2]]
+                costSoFar[this[1]+1][this[2]] = newCost
+                table.insert(frontier, {this[1]+1, this[2], cost=newCost, parent=this})
+            end
+            if IsTileWalkable(this[1], this[2]-1) and (not checked[this[1]][this[2]-1] or (Distance(this[1], this[2]-1, gx,gy) + costSoFar[this[1]][this[2]]) < costSoFar[this[1]][this[2]-1]) then
+                checked[this[1]][this[2]-1] = true
+                local newCost = Distance(this[1], this[2]-1, gx,gy) + costSoFar[this[1]][this[2]]
+                costSoFar[this[1]][this[2]-1] = newCost
+                table.insert(frontier, {this[1], this[2]-1, cost=newCost, parent=this})
+            end
+            if IsTileWalkable(this[1], this[2]+1) and (not checked[this[1]][this[2]+1] or (Distance(this[1], this[2]+1, gx,gy) + costSoFar[this[1]][this[2]]) < costSoFar[this[1]][this[2]+1]) then
+                checked[this[1]][this[2]+1] = true
+                local newCost = Distance(this[1], this[2]+1, gx,gy) + costSoFar[this[1]][this[2]]
+                costSoFar[this[1]][this[2]+1] = newCost
+                table.insert(frontier, {this[1], this[2]+1, cost=newCost, parent=this})
+            end
+
+            -- sort queue by distance to goal
+            table.sort(frontier, function (a,b)
+                return a.cost < b.cost
+            end)
+        end
+
+        -- go back until at 2nd node
+        while nextNode.parent.parent do
+            nextNode = nextNode.parent
+        end
+
+        -- get move to next node in the queue
+        local angle = GetAngle(ox,oy, nextNode[1],nextNode[2])
+        owner.moveVector[1] = math.cos(angle)
+        owner.moveVector[2] = math.sin(angle)
+        return true
+    end
+
+    return self
+end
+
 function NewWalkAwayFromEnemyNode()
     local self = {}
 
