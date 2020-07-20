@@ -21,38 +21,77 @@ function CreateBrainList()
             list[i] = nil
         else
             list[i] = NewBrain(nil)
-
             local brain = list[i]
-            brain.root = NewSelectorNode()
+            local node = Choose {
+                NewSelectorNode,
+                NewSequenceNode,
+                NewInterrogateChildrenNode,
+            }
+            brain.root = node()
 
-            local goAway = NewSequenceNode("goAway")
-            local goTowards = NewSequenceNode("goTowards")
-            local runAwayFromDamage = NewSequenceNode("runAwyFrmDmg")
-            goAway.children = {
-                NewLineOfSightNode(),
-                NewPointTowardsEnemyNode(),
-                NewWalkAwayFromEnemyNode(),
-                NewSnipeEnemyNode(),
-            }
-            goTowards.children = {
-                NewPointTowardsEnemyNode(),
-                NewWalkTowardsEnemyNode(),
-            }
-            runAwayFromDamage.children = {
-                NewIsTakingDamageRightNowNode(),
-                NewWalkAwayFromEnemyNode(),
-            }
+            -- this will be how many modes this bot has
+            local modeCount = RandomInt(1,4)
 
-            brain.root.children = {
-                runAwayFromDamage,
-                goAway,
-                goTowards,
-            }
+            for i=1, modeCount do
+                local this = NewSequenceNode()
+                brain.root.children[i] = this
+
+                local childrenCount = RandomInt(2,3)
+
+                for c=1, childrenCount do
+                    local node = Choose {
+                        NewWalkTowardsEnemyNode,
+                        --NewWalkAwayFromEnemyNode,
+                        NewSnipeEnemyNode,
+                        NewZapEnemyNode,
+                    }
+
+                    -- these test if conditions are met
+                    if c == 1 then
+                        local node = Choose {
+                            NewIsTakingDamageRightNowNode,
+                            NewLineOfSightNode,
+                        }
+                    end
+
+                    this.children[c] = node()
+                end
+            end
         end
     end
 
     return list
 end
+
+
+--[[
+--
+-- sniper bot
+--
+local goAway = NewSequenceNode("goAway")
+local goTowards = NewSequenceNode("goTowards")
+local runAwayFromDamage = NewSequenceNode("runAwyFrmDmg")
+goAway.children = {
+    NewLineOfSightNode(),
+    NewPointTowardsEnemyNode(),
+    NewWalkAwayFromEnemyNode(),
+    NewSnipeEnemyNode(),
+}
+goTowards.children = {
+    NewPointTowardsEnemyNode(),
+    NewWalkTowardsEnemyNode(),
+}
+runAwayFromDamage.children = {
+    NewIsTakingDamageRightNowNode(),
+    NewWalkAwayFromEnemyNode(),
+}
+
+brain.root.children = {
+    runAwayFromDamage,
+    goAway,
+    goTowards,
+}
+]]
 
 function DrawBT(rootNode)
     local rootX, rootY = 1000, 1300
@@ -146,7 +185,7 @@ end
 function NewSequenceNode(name)
     local self = {}
     self.children = {}
-    self.name = name
+    self.name = name or "sequence"
 
     self.query = function (self, owner, enemy)
         -- go through children in order, querying them
@@ -301,14 +340,17 @@ function NewWalkTowardsEnemyNode()
         end
 
         -- go back until at 2nd node
-        while nextNode.parent.parent do
+        while nextNode and nextNode.parent and nextNode.parent.parent do
             nextNode = nextNode.parent
         end
 
         -- get move to next node in the queue
-        local angle = GetAngle(ox,oy, nextNode[1],nextNode[2])
-        owner.moveVector[1] = math.cos(angle)
-        owner.moveVector[2] = math.sin(angle)
+        if nextNode then
+            local angle = GetAngle(ox,oy, nextNode[1],nextNode[2])
+            owner.moveVector[1] = math.cos(angle)
+            owner.moveVector[2] = math.sin(angle)
+        end
+
         return true
     end
 
@@ -335,6 +377,18 @@ function NewSnipeEnemyNode()
 
     self.query = function (self, owner, enemy)
         owner:sniperAttack()
+        return true
+    end
+
+    return self
+end
+
+function NewZapEnemyNode()
+    local self = {}
+    self.name = "zap"
+
+    self.query = function (self, owner, enemy)
+        owner:zapAttack()
         return true
     end
 

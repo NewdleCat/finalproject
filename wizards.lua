@@ -244,11 +244,26 @@ function NewBot(x,y, colorScheme)
 
     self.parentUpdate = self.update
     self.update = function (self, dt)
+        -- default to not moving
         self.moveVector[1] = 0
         self.moveVector[2] = 0
+
+        -- if the mouse is over me, visualize my brain
+        local mx,my = GetMousePosition()
+        if Distance(mx,my, self.x,self.y) < 64 then
+            VisualizedTree = self.brain.root
+        end
+
+        -- if the enemy isn't dead, do my behavior
         if not self.enemy.dead then
+            -- always face the enemy
+            self.direction = GetAngle(self.x,self.y, self.enemy.x,self.enemy.y)
+
+            -- query my behavior tree
             self.brain:query()
         end
+
+        -- return if i should still be alive, and call the parent class update function
         return self:parentUpdate(dt)
     end
 
@@ -283,7 +298,7 @@ function NewPlayer(x,y, colorScheme)
         local stillAlive = self:parentUpdate(dt)
 
         -- always point towards the mouse
-        local mousex,mousey = love.mouse.getX()*Camera.zoom + Camera.x, love.mouse.getY()*Camera.zoom + Camera.y
+        local mousex, mousey = GetMousePosition()
         self.direction = math.pi + math.atan2((self.y-14) - mousey, self.x - mousex)
 
         -- center the camera on me

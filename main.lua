@@ -432,6 +432,10 @@ function CreateColorList()
     return list
 end
 
+function GetMousePosition()
+    return love.mouse.getX()*Camera.zoom + Camera.x, love.mouse.getY()*Camera.zoom + Camera.y
+end
+
 PlayerColors = {
     {63/255, 63/255, 76/255}, -- legs/top of hat (darker, more unsaturated version of cloak)
     {102/255, 102/255, 107/255}, -- cloak (unsaturated color)
@@ -446,3 +450,5 @@ function TableConversion(a,b, p1,p2, t) local ret = {} for i,v in pairs(a) do re
 function Clamp(n, min,max) return math.max(math.min(n, max),min) end
 function Distance(x1,y1, x2,y2) return ((x2-x1)^2+(y2-y1)^2)^0.5 end
 function GetAngle(x1,y1, x2,y2) return math.atan2(y2-y1, x2-x1) end
+function RandomInt(min,max) return math.floor(love.math.random()*(max-min) +min +0.5) end
+function Choose(t) return t[RandomInt(1,#t)] end
