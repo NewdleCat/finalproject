@@ -14,6 +14,7 @@ function love.load()
         zap = love.audio.newSource("sounds/zap.mp3", "static"),
         oof = love.audio.newSource("sounds/oof.mp3", "static"),
         sniper = love.audio.newSource("sounds/sniper.mp3", "static"),
+        heal = love.audio.newSource("sounds/heal.mp3", "static"),
 
         step1 = love.audio.newSource("sounds/step1.mp3", "static"),
         step2 = love.audio.newSource("sounds/step2.mp3", "static"),
@@ -84,9 +85,9 @@ function LoadLevelFromImage(imagePath)
     local bot = AddToThingList(NewBot(64*1.5, 64*1.5))
     bot.brain.root = NewSelectorNode()
 
-    local goAway = NewSequenceNode()
-    local goTowards = NewSequenceNode()
-    local runAwayFromDamage = NewSequenceNode()
+    local goAway = NewSequenceNode("goAway")
+    local goTowards = NewSequenceNode("goTowards")
+    local runAwayFromDamage = NewSequenceNode("runAwyFrmDmg")
     goAway.children = {
         NewLineOfSightNode(),
         NewPointTowardsEnemyNode(),

@@ -221,7 +221,8 @@ function NewWizard(x,y)
     self.healSpell = function (self)
         if self.mana >= 50 then
             self.mana = self.mana - 50
-            AddToThingList(NewHeal(self.x, self.y))
+            local x,y = WorldToTileCoords(self.x,self.y)
+            SetTile(x,y, HEAL_TILE)
         end
     end
 
@@ -257,6 +258,44 @@ function NewBot(x,y)
             self.brain:query()
         end
         return self:parentUpdate(dt)
+    end
+
+    self.drawGui = function (self)
+        rootNode = self.brain.root
+        local rootX, rootY = -1000, -100
+        love.graphics.setColor(1, 1, 1)
+        love.graphics.print(rootNode.name, rootX, rootY, 0, 3) 
+
+        numChildren = #rootNode.children
+        OddEven = numChildren % 2
+        num = -math.floor(numChildren/2)
+        
+        for i, n in pairs(rootNode.children) do
+
+            parentX = rootX + 100 * num * #n.name/2
+
+            numChildren2 = #n.children
+            OddEven2 = numChildren2 % 2
+            num2 = -math.floor(numChildren2/2)
+
+            for index, c in pairs(n.children) do
+
+                if OddEven2 == 0 and num2 == 0 then            
+                else
+                    love.graphics.print(c.name, parentX + 200 * num2 * #n.name/2, rootY + 200, 0, 3)
+                end
+
+                num2 = num2 + 1
+            end
+
+            if OddEven == 0 and num == 0 then            
+            else
+                love.graphics.print(n.name, rootX + 100 * num * #n.name/2, rootY + 100, 0, 3)
+            end
+
+            num = num + 1
+        end
+
     end
 
     return self
