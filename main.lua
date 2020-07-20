@@ -81,13 +81,10 @@ end
 
 function NextMatch()
     -- determine which wizard won
-    local winner = CurrentlyActiveWizards[1]
-    if CurrentlyActiveWizards[1].dead then
-        winner = CurrentlyActiveWizards[2]
-    end
+    local winner = CurrentlyActiveWizards[WinningWizard]
 
+    -- move the winner into the next match
     if RoundIndex+1 <= ROUND_COUNT then
-        -- move the winner into the next match
         local nextMatch = math.floor((MatchIndex-1)/2) +1
         if not Bracket[RoundIndex+1][nextMatch] then
             Bracket[RoundIndex+1][nextMatch] = {}
@@ -115,7 +112,6 @@ function LoadMatch()
     LoadLevelFromImage("maps/map1.png")
 
     -- add the wizards to the scene
-
     local match = Bracket[RoundIndex][MatchIndex]
     local wizard1 = match[1]
     local wizard2 = match[2]
@@ -150,19 +146,26 @@ function LoadMatch()
     end
 
     -- fast forward matches where the player is not involved
-
     if containsPlayer then
         SimulationMultiplier = 1
     else
         SimulationMultiplier = 3
     end
 
+    -- make the wizards enemies
     wizard1.enemy = wizard2
     wizard2.enemy = wizard1
+
+    -- bookkeeping so the game knows who the wizards are
     CurrentlyActiveWizards[1] = wizard1
     CurrentlyActiveWizards[1].id = match[1]
     CurrentlyActiveWizards[2] = wizard2
     CurrentlyActiveWizards[2].id = match[2]
+
+    -- set a time limit for the match and how long the victory animation should be
+    MatchTimeLimit = 60
+    MatchWinTime = 3
+    WinningWizard = nil
 end
 
 function LoadLevelFromImage(imagePath)
@@ -186,7 +189,6 @@ function LoadLevelFromImage(imagePath)
     Camera.x = Camera.x - love.graphics.getWidth()*Camera.zoom/2
     Camera.y = Camera.y - love.graphics.getHeight()*Camera.zoom/2
     ThingList = {}
-
 
     -- load the image from the path and set tiles coresponding to the pixel at that position
     for x=0, MapSize-1 do
@@ -250,6 +252,11 @@ function love.update(dt)
     -- this also guarantees that the AI always has the same simulation time between evaluations
     UpdateController = UpdateController + dt
 
+    -- pitch up sounds that happen in sped up simulations
+    for i,v in pairs(Sounds) do
+        v:setPitch(SimulationMultiplier)
+    end
+
     while UpdateController > 1/60 do
         UpdateController = UpdateController - 1/60
 
@@ -273,10 +280,31 @@ function love.update(dt)
                 end
             end
 
-            for i,w in pairs(CurrentlyActiveWizards) do
-                if w.dead then
-                    NextMatch()
-                end
+            -- check for dead wizards
+            local matchOver = false
+            if CurrentlyActiveWizards[1].dead then
+                WinningWizard = 2
+                matchOver = true
+            elseif CurrentlyActiveWizards[2].dead then
+                WinningWizard = 1
+                matchOver = true
+            end
+
+            -- slowly pan the camera over to the winner
+            if matchOver then
+                MatchWinTime = MatchWinTime - 1/60
+                Camera.x = Lerp(Camera.x, CurrentlyActiveWizards[WinningWizard].x - love.graphics.getWidth()*Camera.zoom/2, 0.075)
+                Camera.y = Lerp(Camera.y, CurrentlyActiveWizards[WinningWizard].y - love.graphics.getHeight()*Camera.zoom/2, 0.075)
+            end
+
+            if MatchWinTime <= 0 then
+                NextMatch()
+            end
+
+            -- if the match goes on for too long, kill a random wizard
+            MatchTimeLimit = MatchTimeLimit - 1/60
+            if MatchTimeLimit <= 0 and not matchOver then
+                CurrentlyActiveWizards[Choose{1,2}].dead = true
             end
         end
     end
@@ -406,6 +434,9 @@ function love.draw()
     end
 
     love.graphics.pop()
+
+    love.graphics.setColor(0,0,0)
+    love.graphics.print("Time: " .. math.floor(MatchTimeLimit + 0.5))
 
     if ShowBehaviorTree and VisualizedTree then
         love.graphics.push()
