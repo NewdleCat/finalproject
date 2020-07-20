@@ -65,8 +65,7 @@ function LoadLevelFromImage(imagePath)
     Map = {}
     MapThings = {}
     local image = love.image.newImageData(imagePath)
-    wide,high = image:getDimensions()
-    MapSize = wide
+    MapSize = 16
     for x=0, MapSize-1 do
         Map[x] = {}
         MapThings[x] = {}
@@ -83,8 +82,8 @@ function LoadLevelFromImage(imagePath)
     ThingList = {}
 
     -- add the wizards to the scene
-    ThePlayer = AddToThingList(NewPlayer(64*14.5,64*14.5))
-    local bot = AddToThingList(NewBot(64*1.5, 64*1.5))
+    ThePlayer = AddToThingList(NewPlayer(64*14.5,64*14.5, GenerateColorscheme()))
+    local bot = AddToThingList(NewBot(64*1.5, 64*1.5, GenerateColorscheme()))
     bot.brain.root = NewSelectorNode()
 
     local goAway = NewSequenceNode("goAway")
@@ -112,6 +111,8 @@ function LoadLevelFromImage(imagePath)
     }
 
     bot.enemy = ThePlayer
+
+    VisualizedTree = bot.brain.root
 
 
     -- load the image from the path and set tiles coresponding to the pixel at that position
@@ -320,6 +321,12 @@ function love.draw()
     end
 
     love.graphics.pop()
+
+    love.graphics.push()
+    love.graphics.scale(0.3,0.3)
+    love.graphics.translate(love.graphics.getWidth()/2, love.graphics.getHeight()*-1)
+    DrawBT(VisualizedTree)
+    love.graphics.pop()
 end
 
 function DrawOval(x,y, r, squish)
@@ -328,6 +335,14 @@ function DrawOval(x,y, r, squish)
     love.graphics.scale(1,squish)
     love.graphics.circle("fill", 0,0, r)
     love.graphics.pop()
+end
+
+function GenerateColorscheme()
+    return {
+        {63/255, 63/255, 76/255},
+        {102/255, 102/255, 107/255},
+        {1/4, 1/2, 1},
+    }
 end
 
 -- a bunch of useful math functions for common tasks

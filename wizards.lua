@@ -1,6 +1,6 @@
 -- a function that acts like a class
 -- it returns an instance of its class when it's called
-function NewWizard(x,y)
+function NewWizard(x,y, colorScheme)
     local self = {}
     self.x = x
     self.y = y
@@ -16,15 +16,8 @@ function NewWizard(x,y)
     self.moveVector = {0,0}
     self.hurtTimer = 0
 
-    -- create my cool ass outfits
-    self.drip = {}
-    self.drip[1] = love.math.random(0.6,1)
-    self.drip[2] = love.math.random(0.4,1)
-    self.drip[3] = love.math.random(0.6,1)
-    self.drip[4] = love.math.random(0.6,1)
-    self.drip[5] = self.drip[4] * ((self.drip[4] - 0.6) / 1.6 + 0.6)
-    self.drip[6] = self.drip[4] - 0.4
-    self.shade = 0.1
+    self.colorScheme = colorScheme
+    print(self.colorScheme[1])
 
     -- create my legs (just for looks)
     self.legs = {}
@@ -147,7 +140,7 @@ function NewWizard(x,y)
         local centerx, centery = self.x, self.y - 28
 
         -- draw legs
-        love.graphics.setColor(self.drip[1],self.drip[2],self.drip[3])
+        love.graphics.setColor(unpack(self.colorScheme[1]))
         for i,leg in pairs(self.legs) do
             leg:draw()
         end
@@ -160,19 +153,19 @@ function NewWizard(x,y)
         end
 
         -- draw cloak
-        love.graphics.setColor(self.drip[1] - self.shade, self.drip[2] - self.shade, self.drip[3] - self.shade)
+        love.graphics.setColor(unpack(self.colorScheme[2]))
         for i=1, 8 do
             DrawOval(centerx,centery+Conversion(30,12, 1,8, i), Conversion(18,12, 1,8, i), 0.4)
         end
 
         -- draw hat
-        love.graphics.setColor(self.drip[4],self.drip[5],self.drip[6])
+        love.graphics.setColor(unpack(self.colorScheme[3]))
         love.graphics.circle("fill", centerx,centery, 12)
-        love.graphics.setColor(self.drip[1] - self.shade,self.drip[2] - self.shade,self.drip[3] - self.shade)
+        love.graphics.setColor(unpack(self.colorScheme[2]))
         DrawOval(centerx,centery-10, 28, 0.4)
         local hatwidth = 11
         local hatheight = 40
-        love.graphics.setColor(self.drip[1],self.drip[2],self.drip[3])
+        love.graphics.setColor(unpack(self.colorScheme[1]))
         love.graphics.polygon("fill", centerx-hatwidth,centery-10, centerx+hatwidth,centery-10, centerx,centery-hatheight)
         DrawOval(centerx,centery-10, hatwidth, 0.4)
 
@@ -246,8 +239,8 @@ function NewWizardLeg(angle, radius, owner)
     return self
 end
 
-function NewBot(x,y)
-    local self = NewWizard(x,y)
+function NewBot(x,y, colorScheme)
+    local self = NewWizard(x,y, colorScheme)
     self.brain = NewBrain(self)
 
     self.parentUpdate = self.update
@@ -260,84 +253,12 @@ function NewBot(x,y)
         return self:parentUpdate(dt)
     end
 
-    self.drawGui = function (self)
-        rootNode = self.brain.root
-        local rootX, rootY = 1000, 1300
-        love.graphics.setColor(1, 1, 1)
-        -- love.graphics.print(rootNode.name, rootX, rootY, 0, 3) 
-
-        count = 0
-        for i, n in pairs(rootNode.children) do
-            for j,k in pairs(n.children) do
-                count = count + 1
-            end
-        end
-
-        love.graphics.print(count, 100, 100 ,0, 3)
-        
-        -- numChildren = #rootNode.children
-        OddEven = count % 2
-        num = -math.floor(count/2)
-        tmep = 1
-        prevLen = 1
-        lenDiff = 1
-
-        pxList = {}
-        pnList = {}
-        plistIndex = 1
-        
-        for i, n in pairs(rootNode.children) do
-
-            xList = {}
-            nList = {}
-            listIndex = 1
-
-            for ci, cn in pairs(n.children) do
-                if num < 0 then
-                    temp = -1
-                else
-                    temp = 1
-                end
-
-                if prevLen ~= 1 and prevLen ~= #cn.name then
-                    lenDiff = math.abs(prevLen - #cn.name) + 1
-                end
-
-                love.graphics.print(cn.name, rootX + (400 * num) + (lenDiff) * 40 * temp, rootY + 1000, 0, 3)
-                prevLen = #cn.name
-
-                xList[listIndex] = rootX + (400 * num) + (lenDiff) * 40 * temp
-                nList[listIndex] = cn.name
-
-                listIndex = listIndex + 1
-                num = num + 1
-            end
-
-            parentX = math.floor((xList[1] + xList[#xList]) / 2)
-            love.graphics.print(n.name, parentX, rootY + 500, 0, 3)
-
-            for x = 1, #xList do
-                love.graphics.line(parentX + #n.name * 12, rootY + 550, xList[x] + #nList[x] * 12, rootY + 1000)
-            end
-
-            pxList[plistIndex] = parentX
-            pnList[plistIndex] = n.name
-            plistIndex = plistIndex + 1
-        end
-
-        rootXPrint = math.floor((pxList[1] + pxList[#pxList]) / 2)
-        love.graphics.print(rootNode.name, rootXPrint, rootY, 0, 3)        
-        for x = 1, #pxList do
-            love.graphics.line(rootXPrint + #rootNode.name * 10, rootY + 50, pxList[x] + #pnList[x] * 12, rootY + 500)
-        end
-    end
-
     return self
 end
 
-function NewPlayer(x,y)
+function NewPlayer(x,y, colorScheme)
     -- this acts as inheritence, inheriting the stuff that the base Wizard class has
-    local self = NewWizard(x,y)
+    local self = NewWizard(x,y, colorScheme)
     self.name = "playerwizard"
 
     -- store the inherited update so that we can call it in our new update function
