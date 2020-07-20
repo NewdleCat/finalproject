@@ -57,6 +57,7 @@ function love.load()
     ROUND_COUNT = 4 -- 2^4 = 16 contestants
     CONTESTANT_COUNT = 2^ROUND_COUNT
     BrainList = CreateBrainList()
+    ColorList = CreateColorList()
     FLOOR_TILE = 0
     WALL_TILE = 1
     FIRE_TILE = 2
@@ -79,7 +80,23 @@ end
 
 function NextMatch()
     -- determine which wizard won
-    print("next match")
+    local winner = CurrentlyActiveWizards[1]
+    if CurrentlyActiveWizards[1].dead then
+        winner = CurrentlyActiveWizards[2]
+    end
+
+    if RoundIndex+1 <= ROUND_COUNT then
+        -- move the winner into the next match
+        local nextMatch = math.floor((MatchIndex-1)/2) +1
+        if not Bracket[RoundIndex+1][nextMatch] then
+            Bracket[RoundIndex+1][nextMatch] = {}
+        end
+        table.insert(Bracket[RoundIndex+1][nextMatch], winner.id)
+        print("wizard " .. winner.brainIndex .. " moves on to match " .. nextMatch .. " of round " .. RoundIndex+1)
+    else
+        print(winner.id .. " wins the tournament!")
+        return
+    end
 
     -- move on to the next match
     MatchIndex = MatchIndex + 1
@@ -88,14 +105,13 @@ function NextMatch()
         RoundIndex = RoundIndex + 1
     end
     LoadMatch()
+
+    print("on to match " .. MatchIndex .. " of round " .. RoundIndex)
 end
 
 function LoadMatch()
     -- reset arena
     LoadLevelFromImage("maps/map1.png")
-
-    print(RoundIndex, MatchIndex)
-    print("#: " .. #Bracket[RoundIndex])
 
     -- add the wizards to the scene
 
@@ -107,29 +123,35 @@ function LoadMatch()
     local x2,y2 = 64*1.5, 64*1.5
 
     if BrainList[wizard1] then
-        local bot = AddToThingList(NewBot(x1,y1, GenerateColorscheme()))
+        local bot = AddToThingList(NewBot(x1,y1, ColorList[wizard1]))
         bot.brain = BrainList[wizard1]
         bot.brain.owner = bot
+        bot.brainIndex = wizard1
         wizard1 = bot
     else
         ThePlayer = AddToThingList(NewPlayer(x1,y1, PlayerColors))
+        ThePlayer.brainIndex = wizard1
         wizard1 = ThePlayer
     end
 
     if BrainList[wizard2] then
-        local bot = AddToThingList(NewBot(x2,y2, GenerateColorscheme()))
+        local bot = AddToThingList(NewBot(x2,y2, ColorList[wizard2]))
         bot.brain = BrainList[wizard2]
         bot.brain.owner = bot
+        bot.brainIndex = wizard2
         wizard2 = bot
     else
         ThePlayer = AddToThingList(NewPlayer(x2,y2, PlayerColors))
+        ThePlayer.brainIndex = wizard2
         wizard2 = ThePlayer
     end
 
     wizard1.enemy = wizard2
     wizard2.enemy = wizard1
     CurrentlyActiveWizards[1] = wizard1
+    CurrentlyActiveWizards[1].id = match[1]
     CurrentlyActiveWizards[2] = wizard2
+    CurrentlyActiveWizards[2].id = match[2]
 end
 
 function LoadLevelFromImage(imagePath)
@@ -395,6 +417,19 @@ function GenerateColorscheme()
         {102/255, 102/255, 107/255}, -- cloak (unsaturated color)
         {1/4, 1/2, 1}, -- face, keep it a bright color (not skintone)
     }
+end
+
+function CreateColorList()
+    local list = {}
+
+    for i=1, CONTESTANT_COUNT do
+        list[i] = GenerateColorscheme()
+        list[i][3][1] = love.math.random()
+        list[i][3][2] = love.math.random()
+        list[i][3][3] = love.math.random()
+    end
+
+    return list
 end
 
 PlayerColors = {
