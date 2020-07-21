@@ -187,8 +187,8 @@ function DrawBT(rootNode)
                     xOffset = xOffset + 300
                 end
 
-                if string.find(nodeName, "takeCover") then
-                    xOffset = xOffset + 150
+                if string.find(nodeName, "takeCover") then -- for some reason words love to get up close 
+                    xOffset = xOffset + 150                -- and personal with "takeCover"
                 end
 
             end
