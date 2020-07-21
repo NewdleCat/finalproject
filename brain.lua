@@ -13,31 +13,41 @@ function NewBrain(owner)
 end
 
 function CreateBrainList()
-    -- define some subtrees to generate behavior trees out of
     Subtrees = {}
+    local function createSubtree(name, nodes)
+        Subtrees[name] = NewSequenceNode()
+        for i,v in ipairs(nodes) do
+            table.insert(Subtrees[name].children, v)
+        end
+    end
 
-    Subtrees.snipeOnSight = NewSequenceNode()
-    table.insert(Subtrees.snipeOnSight.children, NewLineOfSightNode())
-    table.insert(Subtrees.snipeOnSight.children, NewSnipeEnemyNode())
+    -- define some subtrees to generate behavior trees out of
+    createSubtree("snipeOnSight", {
+        NewLineOfSightNode(),
+        NewSnipeEnemyNode(),
+    })
 
-    Subtrees.retreat = NewSequenceNode()
-    table.insert(Subtrees.retreat.children, InverterNode(NewCheckOwnerHealthNode(50)))
-    table.insert(Subtrees.retreat.children, NewTakeCoverNode())
+    createSubtree("retreat", {
+        InverterNode(NewCheckOwnerHealthNode(50)),
+        NewTakeCoverNode(),
+    })
 
-    Subtrees.healInCover = NewSequenceNode()
-    table.insert(Subtrees.healInCover.children, InverterNode(NewCheckOwnerHealthNode(50)))
-    table.insert(Subtrees.healInCover.children, InverterNode(NewLineOfSightNode()))
-    table.insert(Subtrees.healInCover.children, AlwaysTrueNode(NewHealNode()))
+    createSubtree("healInCover", {
+        InverterNode(NewCheckOwnerHealthNode(50)),
+        InverterNode(NewLineOfSightNode()),
+        AlwaysTrueNode(NewHealNode()),
+    })
 
-    Subtrees.runAway = NewSequenceNode()
-    table.insert(Subtrees.runAway.children, NewTakeCoverNode())
+    createSubtree("runAway", {
+        NewTakeCoverNode(),
+    })
 
-    Subtrees.advance = NewSequenceNode()
-    --table.insert(Subtrees.advance.children, NewCheckOwnerDistanceNode(2*64))
-    table.insert(Subtrees.advance.children, NewWalkTowardsEnemyNode())
+    createSubtree("advance", {
+        --NewCheckOwnerDistanceNode(2*64),
+        NewWalkTowardsEnemyNode(),
+    })
 
     local list = {}
-
     for i=1, CONTESTANT_COUNT do
         if i == 1 and DevPlayerEnabled then
             -- the player is denoted as the wizard without a brain
