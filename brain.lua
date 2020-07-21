@@ -40,9 +40,9 @@ function CreateBrainList()
 
                 for c=1, childrenCount do
                     local node = Choose {
-                        --NewWalkTowardsEnemyNode,
+                        -- NewWalkTowardsEnemyNode,
                         NewWalkTowardsEnemyNodeAStar,
-                        --NewWalkAwayFromEnemyNode,
+                        -- NewWalkAwayFromEnemyNode,
                         NewSnipeEnemyNode,
                         NewZapEnemyNode,
                         NewFireballEnemyNode,
