@@ -22,7 +22,7 @@ function CreateBrainList()
     end
 
     -- define some subtrees to generate behavior trees out of
-    
+
     -- EITHER pick snipeOnSight OR snipeToKill
     createSubtree("snipeOnSight", {
         NewLineOfSightNode(),
