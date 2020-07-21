@@ -13,6 +13,29 @@ function NewBrain(owner)
 end
 
 function CreateBrainList()
+    -- define some subtrees to generate behavior trees out of
+    Subtrees = {}
+
+    Subtrees.snipeOnSight = NewSequenceNode()
+    table.insert(Subtrees.snipeOnSight.children, NewLineOfSightNode())
+    table.insert(Subtrees.snipeOnSight.children, NewSnipeEnemyNode())
+
+    Subtrees.retreat = NewSequenceNode()
+    table.insert(Subtrees.retreat.children, InverterNode(NewCheckOwnerHealthNode(50)))
+    table.insert(Subtrees.retreat.children, NewTakeCoverNode())
+
+    Subtrees.healInCover = NewSequenceNode()
+    table.insert(Subtrees.healInCover.children, InverterNode(NewCheckOwnerHealthNode(50)))
+    table.insert(Subtrees.healInCover.children, InverterNode(NewLineOfSightNode()))
+    table.insert(Subtrees.healInCover.children, AlwaysTrueNode(NewHealNode()))
+
+    Subtrees.runAway = NewSequenceNode()
+    table.insert(Subtrees.runAway.children, NewTakeCoverNode())
+
+    Subtrees.advance = NewSequenceNode()
+    --table.insert(Subtrees.advance.children, NewCheckOwnerDistanceNode(2*64))
+    table.insert(Subtrees.advance.children, NewWalkTowardsEnemyNode())
+
     local list = {}
 
     for i=1, CONTESTANT_COUNT do
@@ -22,48 +45,37 @@ function CreateBrainList()
         else
             list[i] = NewBrain(nil)
             local brain = list[i]
-            local node = Choose {
-                NewSelectorNode,
-                NewSequenceNode,
-                NewInterrogateChildrenNode,
-            }
-            brain.root = node()
 
-            -- this will be how many modes this bot has
-            local modeCount = RandomInt(1,4)
-
-            for i=1, modeCount do
-                local this = NewSequenceNode()
-                brain.root.children[i] = this
-
-                local childrenCount = RandomInt(2,3)
-
-                for c=1, childrenCount do
-                    local node = Choose {
-                        NewWalkTowardsEnemyNode,
-                        --NewWalkTowardsEnemyNodeAStar,
-                        --NewWalkAwayFromEnemyNode,
-                        NewSnipeEnemyNode,
-                        NewZapEnemyNode,
-                        NewFireballEnemyNode,
-                        NewHealNode,
-                    }
-
-                    -- these test if conditions are met
-                    if c == 1 then
-                        local node = Choose {
-                            NewIsTakingDamageRightNowNode,
-                            NewLineOfSightNode,
-                        }
-                    end
-
-                    this.children[c] = node()
-                end
+            brain.root = NewSelectorNode() -- stop at the first thing that returns true
+            if i%2 == 1 then
+                table.insert(brain.root.children, Subtrees.healInCover)
+                table.insert(brain.root.children, Subtrees.retreat)
+                table.insert(brain.root.children, Subtrees.snipeOnSight)
+                table.insert(brain.root.children, Subtrees.advance)
+            else
+                table.insert(brain.root.children, Subtrees.runAway)
             end
+
+            print("")
+            print("brain " .. i)
+            print("")
+            PrintBrainToConsole(brain.root)
         end
     end
 
     return list
+end
+
+function PrintBrainToConsole(root, indent)
+    if not indent then indent = "" end
+
+    print(indent .. root.name)
+
+    if root.children then
+        for i,v in pairs(root.children) do
+            PrintBrainToConsole(v, indent .. "|  ")
+        end
+    end
 end
 
 
@@ -205,39 +217,6 @@ function NewSequenceNode(name)
 
     return self
 end
-
--- You are now entering Joey's subtree nodes, tread carefully to avoid bug bites --
-
--- If you see an enemy, snipe them --
-function NewSnipeOnSightNode()
-    local self = NewSequenceNode()
-    self.name = "SnipeOnSight"
-    self.children[0] = NewLineOfSightNode()
-    self.children[1] = NewSnipeEnemyNode()
-
--- If you see an enemy and can snipe to kill, snipe them --
-function NewSnipeOnSightNode()
-    local self = NewSequenceNode()
-    self.name = "SnipeOnSight"
-    self.children[0] = NewLineOfSightNode()
-    self.children[1] = Inverter(NewCheckEnemyHealthNode(75))
-    self.children[1] = NewSnipeEnemyNode()
-
--- If you're not in line of sight, heal --
-function NewHealIfSafeNode()
-    local self = NewSequenceNode()
-    self.name = "HealIfSafe"
-    self.children[0] = Inverter(NewLineOfSightNode())
-    self.children[1] = Inverter(NewCheckOwnerHealthNode(50))
-    self.children[2] = NewHealNode()
-
--- If you're super close, zap --
-    local self = NewSequenceNode()
-    self.name = "ZapIfClose"
-    self.children[0] = NewWithinRangeNode(5)
-    self.children[1] = NewZapEnemyNode()
-
--- You are now leaving Joey's code, safe travels --
 
 function NewSelectorNode()
     local self = {}
@@ -387,6 +366,116 @@ function NewWalkTowardsEnemyNode()
             owner.moveVector[2] = math.sin(angle)
         end
 
+        return true
+    end
+
+    return self
+end
+
+function NewTakeCoverNode()
+    local self = {}
+    self.name = "takeCover"
+
+    self.query = function (self, owner, enemy)
+        local frontier = {}
+        local checked = {}
+        for i=0, 17 do
+            checked[i] = {}
+        end
+        local ox,oy = WorldToTileCoords(owner.x, owner.y)
+        local gx,gy = WorldToTileCoords(owner.x, owner.y)
+        local goalCost = nil
+        for y=0, 15 do
+            local str = ""
+            for x=0, 15 do
+                local angle = GetAngle(x,y, math.floor(enemy.x/64),math.floor(enemy.y/64))
+                local xx,yy = x,y
+                local visible = false
+                while IsTileWalkable(math.floor(xx),math.floor(yy)) do
+                    xx,yy = xx + math.cos(angle)*0.2, yy + math.sin(angle)*0.2
+
+                    if Distance(xx,yy, math.floor(enemy.x/64),math.floor(enemy.y/64)) < 1 then
+                        visible = true
+                        break
+                    end
+                end
+
+                local closenessToMe = Distance(math.floor(owner.x/64), math.floor(owner.y/64), x,y)
+                local farnessFromEnemy = Distance(math.floor(owner.x/64), math.floor(owner.y/64), math.floor(enemy.x/64),math.floor(enemy.y/64))
+                local thisCost = closenessToMe - farnessFromEnemy
+                if visible then
+                    str = str .. "X"
+                else
+                    str = str .. " "
+                end
+                if not visible and IsTileWalkable(x,y) and (goalCost == nil or thisCost < goalCost) then
+                    gx,gy = x,y
+                    goalCost = thisCost
+                end
+            end
+            --print(str)
+        end
+        --print(gx,gy)
+
+        if Distance(ox,oy, gx,gy) <= 1 then
+            return true
+        end
+
+        local nextNode = nil
+        table.insert(frontier, {ox,oy, cost=Distance(ox,oy, gx,gy), parent=nil})
+
+        -- greedy best first
+        while true do
+            -- pop off queue
+            local this = table.remove(frontier, 1)
+
+            if this == nil then
+                return true
+            end
+
+            -- if this is the goal, end loop
+            if this[1] == gx and this[2] == gy then
+                nextNode = this
+                break
+            end
+
+            -- add neighbors
+            if IsTileWalkable(this[1]-1, this[2]) and not checked[this[1]-1][this[2]] then
+                checked[this[1]-1][this[2]] = true
+                table.insert(frontier, {this[1]-1, this[2], cost=Distance(this[1]-1, this[2], gx,gy), parent=this})
+            end
+            if IsTileWalkable(this[1]+1, this[2]) and not checked[this[1]+1][this[2]] then
+                checked[this[1]+1][this[2]] = true
+                table.insert(frontier, {this[1]+1, this[2], cost=Distance(this[1]+1, this[2], gx,gy), parent=this})
+            end
+            if IsTileWalkable(this[1], this[2]-1) and not checked[this[1]][this[2]-1] then
+                checked[this[1]][this[2]-1] = true
+                table.insert(frontier, {this[1], this[2]-1, cost=Distance(this[1], this[2]-1, gx,gy), parent=this})
+            end
+            if IsTileWalkable(this[1], this[2]+1) and not checked[this[1]][this[2]+1] then
+                checked[this[1]][this[2]+1] = true
+                table.insert(frontier, {this[1], this[2]+1, cost=Distance(this[1], this[2]+1, gx,gy), parent=this})
+            end
+
+            -- sort queue by distance to goal
+            table.sort(frontier, function (a,b)
+                return a.cost < b.cost
+            end)
+        end
+
+        -- go back until at 2nd node
+        while nextNode and nextNode.parent and nextNode.parent.parent do
+            nextNode = nextNode.parent
+        end
+
+        -- get move to next node in the queue
+        if nextNode then
+            local angle = GetAngle(ox,oy, nextNode[1],nextNode[2])
+            owner.moveVector[1] = math.cos(angle)
+            owner.moveVector[2] = math.sin(angle)
+        end
+
+        --print("{"..owner.moveVector[1]..", "..owner.moveVector[2].."}")
         return true
     end
 
@@ -578,13 +667,26 @@ end
 function NewCheckOwnerHealthNode(health)
     local self = {}
     self.name = "CheckOwnerHealth"
+    self.health = health
 
     self.query = function (self, owner, enemy)
-        if owner.health >= health then
+        if owner.health >= self.health then
             return true
         else
             return false
         end
+    end
+
+    return self
+end
+
+function NewCheckOwnerDistanceNode(dist)
+    local self = {}
+    self.name = "checkOwnerDistance"
+    self.dist = dist
+
+    self.query = function (self, owner, enemy)
+        return Distance(owner.x,owner.y, enemy.x,enemy.y) > dist
     end
 
     return self
@@ -593,9 +695,10 @@ end
 function NewCheckEnemyHealthNode(health)
     local self = {}
     self.name = "CheckEnemyHealth"
+    self.health = health
 
     self.query = function (self, owner, enemy)
-        if enemy.health >= health then
+        if enemy.health >= self.health then
             return true
         else
             return false
@@ -605,33 +708,50 @@ function NewCheckEnemyHealthNode(health)
     return self
 end
 
-function Inverter(node)
+function InverterNode(node)
     local self = {}
-    self.name = "inverter"
-    
-    if node then
-        return false
-    else
+    self.name = "inverted " .. node.name
+    self.child = node
+
+    self.query = function (self, owner, enemy)
+        return not self.child:query(owner, enemy)
+    end
+
+    return self
+end
+
+function AlwaysTrueNode(node)
+    local self = {}
+    self.name = "always true " .. node.name
+    self.child = node
+
+    self.query = function (self, owner, enemy)
+        self.child:query(owner, enemy)
         return true
     end
+
+    return self
+end
+
+function AlwaysFalseNode(node)
+    local self = {}
+    self.name = "always true " .. node.name
+    self.child = node
+
+    self.query = function (self, owner, enemy)
+        self.child:query(owner, enemy)
+        return false
+    end
+
+    return self
 end
 
 function NewWithinRangeNode(range)
     local self = {}
     self.name = "WithinRange"
+    self.range = range
 
     self.query = function (self, owner, enemy)
-        local x,y = owner.x,owner.y
-        local angle = GetAngle(owner.x,owner.y, enemy.x,enemy.y)
-
-        while IsTileWalkable(WorldToTileCoords(x,y)) do
-            x,y = x + math.cos(angle)*0.5, y + math.sin(angle)*0.5
-
-            if Distance(x,y, enemy.x,enemy.y) < range then
-                return true
-            end
-        end
-
-        return false
+        return Distance(x,y, enemy.x,enemy.y) < self.range
     end
 end

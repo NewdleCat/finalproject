@@ -1,0 +1,88 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.8	//
+AddToThingList	main.lua	/^function AddToThingList(thing)$/;"	f
+Choose	main.lua	/^function Choose(t) return t[RandomInt(1,#t)] end$/;"	f
+Clamp	main.lua	/^function Clamp(n, min,max) return math.max(math.min(n, max),min) end$/;"	f
+Conversion	main.lua	/^function Conversion(a,b, p1,p2, t) return Lerp(a,b, Clamp((t-p1)\/(p2-p1), 0,1)) end$/;"	f
+CreateBrainList	brain.lua	/^function CreateBrainList()$/;"	f
+CreateColorList	main.lua	/^function CreateColorList()$/;"	f
+DeltaLerp	main.lua	/^function DeltaLerp(a,b,t, dt) return Lerp(a,b, 1 - t^(dt)) end$/;"	f
+Distance	main.lua	/^function Distance(x1,y1, x2,y2) return ((x2-x1)^2+(y2-y1)^2)^0.5 end$/;"	f
+DrawBT	brain.lua	/^function DrawBT(rootNode)$/;"	f
+DrawBracket	main.lua	/^function DrawBracket()$/;"	f
+DrawMatch	fight.lua	/^function DrawMatch()$/;"	f
+DrawOval	main.lua	/^function DrawOval(x,y, r, squish)$/;"	f
+GenerateColorscheme	main.lua	/^function GenerateColorscheme()$/;"	f
+GetAngle	main.lua	/^function GetAngle(x1,y1, x2,y2) return math.atan2(y2-y1, x2-x1) end$/;"	f
+GetContestantsAtLayer	main.lua	/^function GetContestantsAtLayer(i)$/;"	f
+GetMousePosition	main.lua	/^function GetMousePosition()$/;"	f
+GetTile	level.lua	/^function GetTile(x,y)$/;"	f
+InitializeTournament	fight.lua	/^function InitializeTournament()$/;"	f
+InverterNode	brain.lua	/^function InverterNode(node)$/;"	f
+IsInsideArena	level.lua	/^function IsInsideArena(x,y)$/;"	f
+IsTileWalkable	level.lua	/^function IsTileWalkable(x,y)$/;"	f
+Lerp	main.lua	/^function Lerp(a,b,t) return (1-t)*a + t*b end$/;"	f
+LoadLevelFromImage	level.lua	/^function LoadLevelFromImage(imagePath)$/;"	f
+LoadMatch	fight.lua	/^function LoadMatch()$/;"	f
+MoveWinnerToNextMatch	fight.lua	/^function MoveWinnerToNextMatch()$/;"	f
+NewBot	wizards.lua	/^function NewBot(x,y, colorScheme)$/;"	f
+NewBrain	brain.lua	/^function NewBrain(owner)$/;"	f
+NewCheckEnemyHealthNode	brain.lua	/^function NewCheckEnemyHealthNode(health)$/;"	f
+NewCheckOwnerHealthNode	brain.lua	/^function NewCheckOwnerHealthNode(health)$/;"	f
+NewEmberParticle	things.lua	/^function NewEmberParticle(x,y)$/;"	f
+NewFireTileVisual	things.lua	/^function NewFireTileVisual(x,y)$/;"	f
+NewFireball	things.lua	/^function NewFireball(x,y, direction)$/;"	f
+NewFireballEnemyNode	brain.lua	/^function NewFireballEnemyNode()$/;"	f
+NewHealNode	brain.lua	/^function NewHealNode()$/;"	f
+NewHealParticle	things.lua	/^function NewHealParticle(x,y)$/;"	f
+NewHealTileVisual	things.lua	/^function NewHealTileVisual(x,y)$/;"	f
+NewInterrogateChildrenNode	brain.lua	/^function NewInterrogateChildrenNode()$/;"	f
+NewIsTakingDamageRightNowNode	brain.lua	/^function NewIsTakingDamageRightNowNode()$/;"	f
+NewLineOfSightNode	brain.lua	/^function NewLineOfSightNode()$/;"	f
+NewPlayer	wizards.lua	/^function NewPlayer(x,y, colorScheme)$/;"	f
+NewPointTowardsEnemyNode	brain.lua	/^function NewPointTowardsEnemyNode()$/;"	f
+NewSelectorNode	brain.lua	/^function NewSelectorNode()$/;"	f
+NewSequenceNode	brain.lua	/^function NewSequenceNode(name)$/;"	f
+NewSnipeEnemyNode	brain.lua	/^function NewSnipeEnemyNode()$/;"	f
+NewSniperShot	things.lua	/^function NewSniperShot(x,y, direction, owner)$/;"	f
+NewWalkAwayFromEnemyNode	brain.lua	/^function NewWalkAwayFromEnemyNode()$/;"	f
+NewWalkTowardsEnemyNode	brain.lua	/^function NewWalkTowardsEnemyNode()$/;"	f
+NewWalkTowardsEnemyNodeAStar	brain.lua	/^function NewWalkTowardsEnemyNodeAStar()$/;"	f
+NewWall	things.lua	/^function NewWall(x,y)$/;"	f
+NewWithinRangeNode	brain.lua	/^function NewWithinRangeNode(range)$/;"	f
+NewWizard	wizards.lua	/^function NewWizard(x,y, colorScheme)$/;"	f
+NewWizardLeg	wizards.lua	/^function NewWizardLeg(angle, radius, owner)$/;"	f
+NewZap	things.lua	/^function NewZap(x,y, direction, offset, owner)$/;"	f
+NewZapEnemyNode	brain.lua	/^function NewZapEnemyNode()$/;"	f
+NextMatch	fight.lua	/^function NextMatch()$/;"	f
+RandomInt	main.lua	/^function RandomInt(min,max) return math.floor(love.math.random()*(max-min) +min +0.5) end$/;"	f
+SetTile	level.lua	/^function SetTile(x,y, value)$/;"	f
+UpdateMatch	fight.lua	/^function UpdateMatch()$/;"	f
+WorldToTileCoords	level.lua	/^function WorldToTileCoords(x,y)$/;"	f
+drawWizardIcon	main.lua	/^    local function drawWizardIcon(wizardID, centerx,centery)$/;"	f
+function TableConversion(a,b, p1,p2, t) local ret 	main.lua	/^function TableConversion(a,b, p1,p2, t) local ret = {} for i,v in pairs(a) do ret[i] = Conversion(a[i],b[i], p1,p2, t) end return ret end$/;"	f
+love.draw	main.lua	/^function love.draw()$/;"	f
+love.keypressed	main.lua	/^function love.keypressed(key)$/;"	f
+love.load	main.lua	/^function love.load(args)$/;"	f
+love.mousepressed	main.lua	/^function love.mousepressed(x,y, button)$/;"	f
+love.update	main.lua	/^function love.update(dt)$/;"	f
+love.wheelmoved	main.lua	/^function love.wheelmoved(x,y)$/;"	f
+self.draw 	things.lua	/^    self.draw = function (self)$/;"	f
+self.draw 	wizards.lua	/^    self.draw = function (self)$/;"	f
+self.drawArm 	wizards.lua	/^    self.drawArm = function (self)$/;"	f
+self.drawGui 	wizards.lua	/^    self.drawGui = function (self)$/;"	f
+self.fireballAttack 	wizards.lua	/^    self.fireballAttack = function (self)$/;"	f
+self.healSpell 	wizards.lua	/^    self.healSpell = function (self)$/;"	f
+self.keypressed 	wizards.lua	/^    self.keypressed = function (self, key)$/;"	f
+self.mousepressed 	wizards.lua	/^    self.mousepressed = function (self, x,y, button)$/;"	f
+self.onDeath 	wizards.lua	/^    self.onDeath = function (self)$/;"	f
+self.query 	brain.lua	/^    self.query = function (self)$/;"	f
+self.query 	brain.lua	/^    self.query = function (self, owner, enemy)$/;"	f
+self.sniperAttack 	wizards.lua	/^    self.sniperAttack = function (self)$/;"	f
+self.update 	things.lua	/^    self.update = function (self, dt)$/;"	f
+self.update 	wizards.lua	/^    self.update = function (self, dt)$/;"	f
+self.zapAttack 	wizards.lua	/^    self.zapAttack = function (self)$/;"	f
