@@ -43,9 +43,25 @@ function CreateBrainList()
     })
 
     createSubtree("advance", {
-        --NewCheckOwnerDistanceNode(2*64),
+        --NewCheckOwnerDistanceNode(2),
         NewWalkTowardsEnemyNode(),
     })
+
+    local botTemplates = {
+        sneakySniper = {
+            Subtrees.healInCover,
+            Subtrees.retreat,
+            Subtrees.snipeOnSight,
+            Subtrees.advance,
+        },
+
+        coward = {
+            Subtrees.runAway,
+        },
+    }
+
+    print(botTemplates)
+    print(#botTemplates)
 
     local list = {}
     for i=1, CONTESTANT_COUNT do
@@ -56,16 +72,23 @@ function CreateBrainList()
             list[i] = NewBrain(nil)
             local brain = list[i]
 
-            brain.root = NewSelectorNode() -- stop at the first thing that returns true
-            if i%2 == 1 then
-                table.insert(brain.root.children, Subtrees.healInCover)
-                table.insert(brain.root.children, Subtrees.retreat)
-                table.insert(brain.root.children, Subtrees.snipeOnSight)
-                table.insert(brain.root.children, Subtrees.advance)
-            else
-                table.insert(brain.root.children, Subtrees.runAway)
+            -- root node is always a selector
+            -- selectors always stop and return when one of their children returns true
+            brain.root = NewSelectorNode()
+
+            -- choose a random template from the list of botTemplates
+            local iteratableTemplates = {}
+            for _,temp in pairs(botTemplates) do
+                table.insert(iteratableTemplates, temp)
+            end
+            local template = Choose(iteratableTemplates)
+
+            -- add all of the subtrees in the template in order to the behavior tree
+            for _,subtree in ipairs(template) do
+                table.insert(brain.root.children, subtree)
             end
 
+            -- print the resulting behavior tree to the console so we can see what's happening
             print("")
             print("brain " .. i)
             print("")
@@ -197,7 +220,7 @@ function DrawBT(rootNode)
                     xOffset = xOffset + 300
                 end
 
-                if string.find(nodeName, "takeCover") then -- for some reason words love to get up close 
+                if string.find(nodeName, "takeCover") then -- for some reason words love to get up close
                     xOffset = xOffset + 150                -- and personal with "takeCover"
                 end
 
@@ -740,7 +763,7 @@ end
 function NewCheckOwnerDistanceNode(dist)
     local self = {}
     self.name = "checkOwnerDistance"
-    self.dist = dist
+    self.dist = dist*64
 
     self.query = function (self, owner, enemy)
         return Distance(owner.x,owner.y, enemy.x,enemy.y) > dist
