@@ -199,14 +199,12 @@ function DrawBracket()
     local lightLine = {0.8,0.8,0.8}
 
     local xvalues = {}
-    local yvalues = {}
     for r=1, ROUND_COUNT do
         local count = GetContestantsAtLayer(r)
         for i=1, count do
             local x = Conversion(0.1,0.9, 1,count, i)*love.graphics.getWidth()
             local y = Conversion(0.8,0.2, 1,ROUND_COUNT, r)*love.graphics.getHeight()
 
-            local lastxvalues = xvalues
             if r == 1 then
                 xvalues[i] = x
             else
@@ -215,7 +213,6 @@ function DrawBracket()
                 -- lastxvalues[i] = x
             end
 
-            local winnerWizard = nil
             if Bracket[r][math.floor((i-1)/2) +1] then
                 local wizard = Bracket[r][math.floor((i-1)/2) +1][(i-1)%2 +1]
                 addWizardCoords(wizard, r, x, y)
