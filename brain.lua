@@ -22,9 +22,24 @@ function CreateBrainList()
     end
 
     -- define some subtrees to generate behavior trees out of
+    
+    -- EITHER pick snipeOnSight OR snipeToKill
     createSubtree("snipeOnSight", {
         NewLineOfSightNode(),
         NewSnipeEnemyNode(),
+    })
+
+    createSubtree("snipeToKill", {
+        NewLineOfSightNode(),
+        InverterNode(NewCheckEnemyHealthNode(75)),
+        NewSnipeEnemyNode(),
+    })
+    -- end of sniper nodes
+
+    -- Only pick one retreat
+    createSubtree("strongRetreat", {
+        InverterNode(NewCheckOwnerHealthNode(75)),
+        NewTakeCoverNode(),
     })
 
     createSubtree("retreat", {
@@ -32,20 +47,35 @@ function CreateBrainList()
         NewTakeCoverNode(),
     })
 
+    createSubtree("weakRetreat", {
+        InverterNode(NewCheckOwnerHealthNode(25)),
+        NewTakeCoverNode(),
+    })
+    -- end of retreat nodes
+
+    -- Only pick one heal
+    createSubtree("weakHealInCover", {
+        InverterNode(NewCheckOwnerHealthNode(25)),
+        InverterNode(NewLineOfSightNode()),
+        AlwaysTrueNode(NewHealNode()),
+    })
+
     createSubtree("healInCover", {
         InverterNode(NewCheckOwnerHealthNode(50)),
         InverterNode(NewLineOfSightNode()),
         AlwaysTrueNode(NewHealNode()),
     })
+    -- end of heals
 
+    -- Only pick one default movement
     createSubtree("runAway", {
         NewTakeCoverNode(),
     })
 
     createSubtree("advance", {
-        --NewCheckOwnerDistanceNode(2),
         NewWalkTowardsEnemyNode(),
     })
+    -- end of default movements
 
     createSubtree("runAwayFromDamage", {
         NewIsTakingDamageRightNowNode(),
@@ -65,6 +95,8 @@ function CreateBrainList()
             Subtrees.runAwayFromDamage,
             Subtrees.runAway,
         },
+
+
     }
 
     local list = {}
@@ -185,7 +217,7 @@ function DrawBT(rootNode)
         end
     end
 
-    local rootX, rootY = 1000, 1300
+    local rootX, rootY = 1300, 1300
     love.graphics.setColor(1, 1, 1)
 
     count = 0
