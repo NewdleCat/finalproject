@@ -148,7 +148,6 @@ function love.draw()
     end
 end
 
-lineList = {}
 wizardCoords = {}
 function DrawBracket()
     local function drawWizardIcon(wizardID, centerx,centery)
@@ -191,12 +190,6 @@ function DrawBracket()
         end
 
         return nil
-    end
-
-
-    for _,l in pairs(lineList) do
-        love.graphics.setColor(0, 0.8, 0)
-        love.graphics.line(l.x1, l.y1, l.x2, l.y2)
     end
 
     love.graphics.setColor(0.25,0,0.5, 0.5)
