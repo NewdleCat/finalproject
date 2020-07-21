@@ -98,7 +98,7 @@ function LoadMatch()
     if containsPlayer then
         SimulationMultiplier = 1
     else
-        SimulationMultiplier = 20
+        SimulationMultiplier = PlayerlessSimulationMultiplier
     end
 
     -- make the wizards enemies

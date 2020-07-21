@@ -11,11 +11,16 @@ function love.load(args)
     Paused = false
     ShowBehaviorTree = false
     SimulationMultiplier = 1
+    PlayerlessSimulationMultiplier = 10
 
     -- if you give the program "player" as a command line argument, you can be a participant in the tournament
     for i,v in pairs(args) do
         if v == "player" then
             DevPlayerEnabled = true
+        end
+
+        if v == "speed" then
+            PlayerlessSimulationMultiplier = args[i+1]
         end
     end
 
