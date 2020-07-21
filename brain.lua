@@ -118,10 +118,46 @@ brain.root.children = {
 }
 ]]
 
+nodeCoords = {}
 function DrawBT(rootNode)
+
+    local function addCoords(name, layer, x, index)
+        local node = {}
+        node.name = name
+        node.layer = layer -- layer 1 is the bottom most layer
+        node.x = x
+        node.index = index -- number it was added in, similar to braket[]
+        exists = false
+
+        for _,n in pairs(nodeCoords) do
+            if n.name == name and n.layer == layer and n.x == x and n.index == index then
+                exists = true
+            end
+        end
+
+        if exists == false then
+            table.insert(nodeCoords, node)
+        end
+    end
+
+    local function getNode(layer, index)
+        for _,n in pairs(nodeCoords) do
+            if n.layer == layer and n.index == index then
+                return n.name, n.x
+            end
+        end
+    end
+
+    local function updateVal(layer, index, newVal)
+        for _,n in pairs(nodeCoords) do
+            if n.layer == layer and n.index == index then
+                n.x = newVal
+            end
+        end
+    end
+
     local rootX, rootY = 1000, 1300
     love.graphics.setColor(1, 1, 1)
-    -- love.graphics.print(rootNode.name, rootX, rootY, 0, 3)
 
     count = 0
     for i, n in pairs(rootNode.children) do
@@ -130,18 +166,13 @@ function DrawBT(rootNode)
         end
     end
 
-    love.graphics.print(count, 100, 100 ,0, 3)
 
-    -- numChildren = #rootNode.children
-    OddEven = count % 2
     num = -math.floor(count/2)
-    tmep = 1
-    prevLen = 1
-    lenDiff = 1
 
     pxList = {}
     pnList = {}
     plistIndex = 1
+    coordsIndex = 1
 
     for i, n in pairs(rootNode.children) do
 
@@ -150,24 +181,39 @@ function DrawBT(rootNode)
         listIndex = 1
 
         for ci, cn in pairs(n.children) do
-            if num < 0 then
-                temp = -1
-            else
-                temp = 1
+
+            xList[listIndex] = rootX + (500 * num) -- initial add to the list
+
+            xOffset = 0
+
+            if coordsIndex > 1 then
+                nodeName, nodeX = getNode(1, coordsIndex - 1) -- Gets Previous node
+
+                xOffset = (#nodeName * 20 ) + 200
+                if xList[listIndex] + xOffset - nodeX > 500 then
+                    xOffset = xOffset - 400
+
+                elseif xList[listIndex] + xOffset - nodeX < 500 then
+                    xOffset = xOffset + 300
+                end
+
+                if string.find(nodeName, "takeCover") then -- for some reason words love to get up close 
+                    xOffset = xOffset + 150                -- and personal with "takeCover"
+                end
+
             end
 
-            if prevLen ~= 1 and prevLen ~= #cn.name then
-                lenDiff = math.abs(prevLen - #cn.name) + 1
-            end
 
-            love.graphics.print(cn.name, rootX + (400 * num) + (lenDiff) * 40 * temp, rootY + 1000, 0, 3)
-            prevLen = #cn.name
-
-            xList[listIndex] = rootX + (400 * num) + (lenDiff) * 40 * temp
             nList[listIndex] = cn.name
+            xList[listIndex] = rootX + (400 * num) + xOffset -- update it with the offset
+            addCoords(cn.name, 1, xList[listIndex], coordsIndex) -- addit to the nodeCoords table
+
+            love.graphics.print(cn.name, xList[listIndex], rootY + 1000, 0, 3)
+
 
             listIndex = listIndex + 1
             num = num + 1
+            coordsIndex = coordsIndex + 1
         end
 
         parentX = math.floor((xList[1] + xList[#xList]) / 2)
@@ -206,6 +252,7 @@ end
 -- fireball
 -- sniper
 -- zap
+-- heal
 
 function NewSequenceNode(name)
     local self = {}
@@ -316,7 +363,7 @@ end
 
 function NewWalkTowardsEnemyNode()
     local self = {}
-    self.name = "wlkTwrdsEn"
+    self.name = "walkTowardsEnemy"
 
     self.query = function (self, owner, enemy)
         local frontier = {}
@@ -572,7 +619,7 @@ end
 
 function NewWalkAwayFromEnemyNode()
     local self = {}
-    self.name = "wlkAwyFrmEn"
+    self.name = "walkAway\nFromEnemy"
 
     self.query = function (self, owner, enemy)
         local angle = GetAngle(owner.x,owner.y, enemy.x,enemy.y)
