@@ -151,6 +151,34 @@ function love.draw()
         DrawBT(VisualizedTree)
         love.graphics.pop()
     end
+
+    love.graphics.setColor(1, 1, 1)
+    verticalTree = nil
+    if CurrentlyActiveWizards[1].brain.root ~= nil then
+        love.graphics.print(createVerticalTree(CurrentlyActiveWizards[1].brain.root), 50, 500 ,0 , 1)
+    end
+    if CurrentlyActiveWizards[2].brain.root ~= nil then
+        love.graphics.print(createVerticalTree(CurrentlyActiveWizards[2].brain.root), 1450, 500 ,0 , 1)
+    end
+
+    if verticalTree ~= nil then
+    end
+
+end
+
+function createVerticalTree(root, indent, verticalTree) -- wizardNum is one or 2, same as index for CurrentlyActiveWizards
+    if not indent then indent = "" end
+    if not verticalTree then verticalTree = "" end
+
+    verticalTree = verticalTree .. "\n".. indent .. root.name
+
+    if root.children then
+        for i,v in pairs(root.children) do
+            verticalTree = createVerticalTree(v, indent .. "|  ", verticalTree)
+        end
+    end
+
+    return verticalTree
 end
 
 wizardCoords = {}
