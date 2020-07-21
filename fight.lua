@@ -174,7 +174,9 @@ function UpdateMatch()
         end
 
         -- if the match goes on for too long, kill a random wizard
-        MatchTimeLimit = MatchTimeLimit - 1/60
+        if not MatchOver then
+            MatchTimeLimit = math.max(MatchTimeLimit - 1/60, 0)
+        end
         if MatchTimeLimit <= 0 and not MatchOver then
             CurrentlyActiveWizards[Choose{1,2}].dead = true
         end

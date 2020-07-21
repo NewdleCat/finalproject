@@ -22,7 +22,7 @@ function CreateBrainList()
     end
 
     -- define some subtrees to generate behavior trees out of
-    
+
     -- EITHER pick snipeOnSight OR snipeToKill
     createSubtree("snipeOnSight", {
         NewLineOfSightNode(),
@@ -413,7 +413,7 @@ end
 
 function NewIsTakingDamageRightNowNode()
     local self = {}
-    self.name = "isTkingDmg"
+    self.name = "is taking damage"
 
     self.query = function (self, owner, enemy)
         return owner.hurtTimer > 0
@@ -680,7 +680,7 @@ end
 
 function NewWalkAwayFromEnemyNode()
     local self = {}
-    self.name = "walkAway\nFromEnemy"
+    self.name = "walk away from enemy"
 
     self.query = function (self, owner, enemy)
         local angle = GetAngle(owner.x,owner.y, enemy.x,enemy.y)

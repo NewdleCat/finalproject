@@ -12,15 +12,23 @@ function love.load(args)
     ShowBehaviorTree = false
     SimulationMultiplier = 1
     PlayerlessSimulationMultiplier = 10
+    Font = love.graphics.newFont("comicneue.ttf", 40)
+    love.graphics.setFont(Font)
+    DevPlayerEnabled = true
 
     -- if you give the program "player" as a command line argument, you can be a participant in the tournament
+    love.audio.setVolume(0.2)
     for i,v in pairs(args) do
-        if v == "player" then
-            DevPlayerEnabled = true
+        if v == "sim" then
+            DevPlayerEnabled = false
         end
 
         if v == "speed" then
             PlayerlessSimulationMultiplier = args[i+1]
+        end
+
+        if v == "volume" then
+            love.audio.setVolume(args[i+1])
         end
     end
 
@@ -42,7 +50,6 @@ function love.load(args)
 
         ocean = love.audio.newSource("sounds/ocean2.mp3", "stream"),
     }
-    love.audio.setVolume(0.2)
     Sounds.ocean:setLooping(true)
     Sounds.ocean:setVolume(0.5)
     Sounds.ocean:play()
@@ -138,6 +145,12 @@ function love.draw()
     -- draw the time remaining in the upper left corner
     love.graphics.setColor(0,0,0)
     love.graphics.print("Time: " .. math.floor(MatchTimeLimit + 0.5))
+
+    if MatchOver then
+        local text = "Wizard " .. CurrentlyActiveWizards[WinningWizard].id .. " wins!"
+        local textWidth = Font:getWidth(text)
+        love.graphics.print(text, love.graphics.getWidth()/2 - textWidth/2, love.graphics.getHeight()/2 - 150)
+    end
 
     if MatchWinTime < 3 then
         DrawBracket()
