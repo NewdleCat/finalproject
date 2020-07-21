@@ -47,8 +47,14 @@ function CreateBrainList()
         NewWalkTowardsEnemyNode(),
     })
 
+    createSubtree("runAwayFromDamage", {
+        NewIsTakingDamageRightNowNode(),
+        NewWalkAwayFromEnemyNode(),
+    })
+
     local botTemplates = {
         sneakySniper = {
+            Subtrees.runAwayFromDamage,
             Subtrees.healInCover,
             Subtrees.retreat,
             Subtrees.snipeOnSight,
@@ -56,12 +62,10 @@ function CreateBrainList()
         },
 
         coward = {
+            Subtrees.runAwayFromDamage,
             Subtrees.runAway,
         },
     }
-
-    print(botTemplates)
-    print(#botTemplates)
 
     local list = {}
     for i=1, CONTESTANT_COUNT do
@@ -95,6 +99,8 @@ function CreateBrainList()
             PrintBrainToConsole(brain.root)
         end
     end
+
+    print("")
 
     return list
 end
