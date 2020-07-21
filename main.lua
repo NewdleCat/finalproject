@@ -148,6 +148,8 @@ function love.draw()
     end
 end
 
+lineList = {}
+wizardCoords = {}
 function DrawBracket()
     local function drawWizardIcon(wizardID, centerx,centery)
         local colorScheme = ColorList[wizardID]
@@ -162,10 +164,49 @@ function DrawBracket()
         DrawOval(centerx,centery-10, hatwidth, 0.4)
     end
 
+    local function addWizardCoords(wizard, round, x, y)
+        w = {}
+        w.wizardID = wizard
+        w.round = round
+        w.x = x
+        w.y = y
+        exists = false
+
+        for _,w in pairs(wizardCoords) do
+            if w.wizardID == wizard and w.round == round and w.x == x and w.y == y then
+                exists = true
+            end
+        end
+
+        if exists == false then
+            table.insert(wizardCoords, w)
+        end
+    end
+
+    local function getWizardCoords(wizard, round)
+        for _,w in pairs(wizardCoords) do
+            if w.wizardID == wizard and w.round == round then
+                return w.x, w.y
+            end
+        end
+
+        return nil
+    end
+
+
+    for _,l in pairs(lineList) do
+        love.graphics.setColor(0, 0.8, 0)
+        love.graphics.line(l.x1, l.y1, l.x2, l.y2)
+    end
+
     love.graphics.setColor(0.25,0,0.5, 0.5)
     love.graphics.rectangle("fill", 0,0, love.graphics.getWidth(),love.graphics.getHeight())
 
+    local darkLine = {0.1,0.1,0.1}
+    local lightLine = {0.8,0.8,0.8}
+
     local xvalues = {}
+    local yvalues = {}
     for r=1, ROUND_COUNT do
         local count = GetContestantsAtLayer(r)
         for i=1, count do
@@ -178,16 +219,45 @@ function DrawBracket()
             else
                 x = (xvalues[i*2] + xvalues[i*2 -1])/2
                 xvalues[i] = x
+                -- lastxvalues[i] = x
             end
 
+            local winnerWizard = nil
             if Bracket[r][math.floor((i-1)/2) +1] then
                 local wizard = Bracket[r][math.floor((i-1)/2) +1][(i-1)%2 +1]
+                addWizardCoords(wizard, r, x, y)
 
                 if r-1 >= 1 then
-                    local lastMatch = Bracket[r-1][math.floor(math.floor((i-1)/2)) +1]
+                    local lastMatch = Bracket[r - 1][i]
+
                     love.graphics.setColor(1,1,1)
-                    if lastMatch[1] == wizard then
-                        --love.graphics.line(lastxvalues[])
+
+                    if wizard == 2 then
+                        print(lastMatch[1], lastMatch[2])
+                    end
+
+                    x1, y1 = getWizardCoords(lastMatch[1], r - 1)
+                    x2, y2 = getWizardCoords(lastMatch[2], r - 1)
+
+                    if lastMatch[1] == wizard then --Check to see which wizard is the winner
+                        love.graphics.setColor(unpack(darkLine))
+                        love.graphics.line(x2, y2 - 45, x2, math.floor((y + y2)/2))
+                        love.graphics.line(x - 2, math.floor((y + y2)/2), x2 + 2, math.floor((y + y2)/2))
+
+                        love.graphics.setColor(unpack(lightLine))
+                        love.graphics.line(x, y, x, math.floor((y + y1)/2))
+                        love.graphics.line(x1, y1 - 45, x1, math.floor((y + y1)/2))
+                        love.graphics.line(x + 2, math.floor((y + y1)/2), x1 - 2, math.floor((y + y1)/2))
+
+                    elseif lastMatch[2] == wizard then
+                        love.graphics.setColor(unpack(darkLine))
+                        love.graphics.line(x1, y1 - 45, x1, math.floor((y + y1)/2))
+                        love.graphics.line(x + 2, math.floor((y + y1)/2), x1 - 2, math.floor((y + y1)/2))
+
+                        love.graphics.setColor(unpack(lightLine))
+                        love.graphics.line(x, y, x, math.floor((y + y2)/2))
+                        love.graphics.line(x2, y2 - 45, x2, math.floor((y + y2)/2))
+                        love.graphics.line(x - 2, math.floor((y + y2)/2), x2 + 2, math.floor((y + y2)/2))
                     end
                 end
 
@@ -197,6 +267,14 @@ function DrawBracket()
             end
         end
     end
+
+    --[[
+    if TournamentOver then
+        love.graphics.setColor(unpack(lightLine))
+        tx = (xvalues[1] + xvalues[2]) / 2
+        love.graphics.line(tx, 100, tx ,200)
+    end
+    ]]
 end
 
 function GetContestantsAtLayer(i)

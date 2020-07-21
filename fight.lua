@@ -36,6 +36,7 @@ function MoveWinnerToNextMatch()
         print("wizard " .. winner.brainIndex .. " moves on to match " .. nextMatch .. " of round " .. RoundIndex+1)
     else
         print(winner.id .. " wins the tournament!")
+        TournamentOver = true
     end
 end
 
@@ -97,7 +98,7 @@ function LoadMatch()
     if containsPlayer then
         SimulationMultiplier = 1
     else
-        SimulationMultiplier = 1
+        SimulationMultiplier = 20
     end
 
     -- make the wizards enemies
