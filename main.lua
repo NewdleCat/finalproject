@@ -227,10 +227,6 @@ function DrawBracket()
 
                     love.graphics.setColor(1,1,1)
 
-                    if wizard == 2 then
-                        print(lastMatch[1], lastMatch[2])
-                    end
-
                     x1, y1 = getWizardCoords(lastMatch[1], r - 1)
                     x2, y2 = getWizardCoords(lastMatch[2], r - 1)
 
