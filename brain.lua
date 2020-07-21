@@ -185,7 +185,7 @@ function DrawBT(rootNode)
         end
     end
 
-    local rootX, rootY = 1000, 1300
+    local rootX, rootY = 1300, 1300
     love.graphics.setColor(1, 1, 1)
 
     count = 0
