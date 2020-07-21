@@ -206,6 +206,39 @@ function NewSequenceNode(name)
     return self
 end
 
+-- You are now entering Joey's subtree nodes, tread carefully to avoid bug bites --
+
+-- If you see an enemy, snipe them --
+function NewSnipeOnSightNode()
+    local self = NewSequenceNode()
+    self.name = "SnipeOnSight"
+    self.children[0] = NewLineOfSightNode()
+    self.children[1] = NewSnipeEnemyNode()
+
+-- If you see an enemy and can snipe to kill, snipe them --
+function NewSnipeOnSightNode()
+    local self = NewSequenceNode()
+    self.name = "SnipeOnSight"
+    self.children[0] = NewLineOfSightNode()
+    self.children[1] = Inverter(NewCheckEnemyHealthNode(75))
+    self.children[1] = NewSnipeEnemyNode()
+
+-- If you're not in line of sight, heal --
+function NewHealIfSafeNode()
+    local self = NewSequenceNode()
+    self.name = "HealIfSafe"
+    self.children[0] = Inverter(NewLineOfSightNode())
+    self.children[1] = Inverter(NewCheckOwnerHealthNode(50))
+    self.children[2] = NewHealNode()
+
+-- If you're super close, zap --
+    local self = NewSequenceNode()
+    self.name = "ZapIfClose"
+    self.children[0] = NewWithinRangeNode(5)
+    self.children[1] = NewZapEnemyNode()
+
+-- You are now leaving Joey's code, safe travels --
+
 function NewSelectorNode()
     local self = {}
     self.children = {}
@@ -457,6 +490,9 @@ function NewSnipeEnemyNode()
     self.name = "snipe"
 
     self.query = function (self, owner, enemy)
+        if owner.mana < 75 then
+            return false
+        end
         owner:sniperAttack()
         return true
     end
@@ -469,6 +505,9 @@ function NewZapEnemyNode()
     self.name = "zap"
 
     self.query = function (self, owner, enemy)
+        if owner.mana < 15 then
+            return false
+        end
         owner:zapAttack()
         return true
     end
@@ -481,6 +520,9 @@ function NewFireballEnemyNode()
     self.name = "fireball"
 
     self.query = function (self, owner, enemy)
+        if owner.mana < 35 then
+            return false
+        end
         owner:fireballAttack()
         return true
     end
@@ -493,9 +535,103 @@ function NewHealNode()
     self.name = "heal"
 
     self.query = function (self, owner, enemy)
+        if owner.mana < 50 then
+            return false
+        end
         owner:healSpell()
         return true
     end
 
     return self
+end
+
+-- function NewCheckOwnerManaNode(mana)
+--     local self = {}
+--     self.name = "CheckOwnerMana"
+
+--     self.query = function (self, owner, enemy)
+--         if owner.mana >= mana then
+--             return true
+--         else
+--             return false
+--         end
+--     end
+
+--     return self
+-- end
+
+-- function NewCheckEnemyManaNode(mana)
+--     local self = {}
+--     self.name = "CheckEnemyMana"
+
+--     self.query = function (self, owner, enemy)
+--         if enemy.mana >= mana then
+--             return true
+--         else
+--             return false
+--         end
+--     end
+
+--     return self
+-- end
+
+function NewCheckOwnerHealthNode(health)
+    local self = {}
+    self.name = "CheckOwnerHealth"
+
+    self.query = function (self, owner, enemy)
+        if owner.health >= health then
+            return true
+        else
+            return false
+        end
+    end
+
+    return self
+end
+
+function NewCheckEnemyHealthNode(health)
+    local self = {}
+    self.name = "CheckEnemyHealth"
+
+    self.query = function (self, owner, enemy)
+        if enemy.health >= health then
+            return true
+        else
+            return false
+        end
+    end
+
+    return self
+end
+
+function Inverter(node)
+    local self = {}
+    self.name = "inverter"
+    
+    if node then
+        return false
+    else
+        return true
+    end
+end
+
+function NewWithinRangeNode(range)
+    local self = {}
+    self.name = "WithinRange"
+
+    self.query = function (self, owner, enemy)
+        local x,y = owner.x,owner.y
+        local angle = GetAngle(owner.x,owner.y, enemy.x,enemy.y)
+
+        while IsTileWalkable(WorldToTileCoords(x,y)) do
+            x,y = x + math.cos(angle)*0.5, y + math.sin(angle)*0.5
+
+            if Distance(x,y, enemy.x,enemy.y) < range then
+                return true
+            end
+        end
+
+        return false
+    end
 end
