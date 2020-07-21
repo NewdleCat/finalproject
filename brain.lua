@@ -242,6 +242,7 @@ end
 -- fireball
 -- sniper
 -- zap
+-- heal
 
 function NewSequenceNode(name)
     local self = {}
