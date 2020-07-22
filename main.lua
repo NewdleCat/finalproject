@@ -49,6 +49,7 @@ function love.load(args)
         zap = love.audio.newSource("sounds/zap.mp3", "static"),
         oof = love.audio.newSource("sounds/oof.mp3", "static"),
         sniper = love.audio.newSource("sounds/sniper.mp3", "static"),
+        snipeCharge = love.audio.newSource("sounds/charge.mp3", "stream"),
         heal = love.audio.newSource("sounds/heal.mp3", "static"),
         cheering = love.audio.newSource("sounds/cheering.mp3", "stream"),
         countdown = love.audio.newSource("sounds/countdown.mp3", "stream"),

@@ -18,6 +18,8 @@ function NewWizard(x,y, colorScheme)
     self.healTimer = 0
     self.snipeChargeupTimer = 0
     self.snipeChargeupTimerMax = 1.25
+    self.enemyDistance = nil
+    self.enemyApproaching = 0
 
     self.colorScheme = colorScheme
 
@@ -115,6 +117,17 @@ function NewWizard(x,y, colorScheme)
             AddToThingList(NewSniperShot(self.x + math.cos(self.direction)*64,self.y + math.sin(self.direction)*64, self.direction, self))
         end
 
+        -- determine if the enemy is approaching
+        self.enemyApproaching = math.max(self.enemyApproaching - dt, 0)
+        local lastEnemyDistance = self.enemyDistance
+        if self.enemy then
+            self.enemyDistance = Distance(self.x,self.y, self.enemy.x,self.enemy.y)
+
+            if lastEnemyDistance and self.enemyDistance < lastEnemyDistance - Distance(0,0, self.xSpeed,self.ySpeed) then
+                self.enemyApproaching = 1
+            end
+        end
+
         -- apply some friction to be able to stop walking
         local friction = 0.8
         self.xSpeed = self.xSpeed * friction
@@ -206,13 +219,13 @@ function NewWizard(x,y, colorScheme)
         -- draw health bar
         local width = 120
         love.graphics.setColor(1,0,0.2)
-        love.graphics.rectangle("fill", self.x -width/2, math.max(self.y - 100, Camera.y), width*(self.health/100), 10)
+        love.graphics.rectangle("fill", self.x -width/2, self.y - 100, width*(self.health/100), 10)
         love.graphics.setColor(0.1,0.1,0.1, 0.5)
-        love.graphics.rectangle("fill", self.x -width/2 + width, math.max(self.y - 100, Camera.y), -1*width*(1 - self.health/100), 10)
+        love.graphics.rectangle("fill", self.x -width/2 + width, self.y - 100, -1*width*(1 - self.health/100), 10)
         love.graphics.setColor(0.2,0,1)
-        love.graphics.rectangle("fill", self.x -width/2, math.max(self.y - 100, Camera.y) + 16, width*(self.mana/100), 10)
+        love.graphics.rectangle("fill", self.x -width/2, self.y - 100 + 16, width*(self.mana/100), 10)
         love.graphics.setColor(0.1,0.1,0.1, 0.5)
-        love.graphics.rectangle("fill", self.x -width/2 + width, math.max(self.y - 100, Camera.y) + 16, -1*width*(1 - self.mana/100), 10)
+        love.graphics.rectangle("fill", self.x -width/2 + width, self.y - 100 + 16, -1*width*(1 - self.mana/100), 10)
     end
 
     self.fireballAttack = function (self)
@@ -235,6 +248,8 @@ function NewWizard(x,y, colorScheme)
         if self.mana >= 75 and self.snipeChargeupTimer <= 0 then
             self.mana = self.mana - 75
             self.snipeChargeupTimer = self.snipeChargeupTimerMax
+            love.audio.stop(Sounds.snipeCharge)
+            love.audio.play(Sounds.snipeCharge)
         end
     end
 

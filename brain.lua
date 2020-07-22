@@ -231,6 +231,12 @@ function CreateBrainList()
         NewStrafeNode(),
     })
 
+    createSubtree("approachCamper", {
+        InverterNode(NewIsEnemyApproachingNode()),
+        InverterNode(NewWithinRangeNode(3)),
+        NewWalkTowardsEnemyNode(),
+    })
+
     -- a recipe that works well for building AIs
     --   damage control
     --   attack pattern
@@ -305,11 +311,13 @@ function CreateBrainList()
         {
             -- need some way to avoid stalemates here
             Subtrees.peekAroundCorner,
+            Subtrees.approachCamper,
         },
 
-        {
-            Subtrees.runAway,
-        },
+        --{
+            --Subtrees.approachCamper,
+            --Subtrees.runAway,
+        --},
 
         {
             Subtrees.advanceWhenFar,

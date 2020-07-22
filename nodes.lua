@@ -122,6 +122,17 @@ function NewIsEnemySnipingNode()
     return self
 end
 
+function NewIsEnemyApproachingNode()
+    local self = {}
+    self.name = "is enemy approaching"
+
+    self.query = function (self, owner, enemy)
+        return owner.enemyApproaching > 0
+    end
+
+    return self
+end
+
 function NewTakeCoverNode(showDebug)
     local self = {}
     self.name = "take cover"
