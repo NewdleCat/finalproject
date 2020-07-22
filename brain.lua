@@ -15,7 +15,7 @@ end
 function CreateBrainList()
     Subtrees = {}
     local function createSubtree(name, nodes)
-        Subtrees[name] = NewSequenceNode()
+        Subtrees[name] = NewSequenceNode(name)
         for i,v in ipairs(nodes) do
             table.insert(Subtrees[name].children, v)
         end
@@ -260,8 +260,8 @@ function DrawBT(rootNode)
 
                 if string.find(nodeName, "takeCover") then -- for some reason words love to get up close
                     xOffset = xOffset + 150                -- and personal with "takeCover"
-                elseif string.find(nodeName, "walky away from enemy") then 
-                    xOffset = xOffset + 200                
+                elseif string.find(nodeName, "walky away from enemy") then
+                    xOffset = xOffset + 200
                 end
 
             end
@@ -320,7 +320,7 @@ end
 function NewSequenceNode(name)
     local self = {}
     self.children = {}
-    self.name = name or "sequence"
+    self.name = name .. " sequence" or "sequence"
 
     self.query = function (self, owner, enemy)
         -- go through children in order, querying them
@@ -830,7 +830,7 @@ end
 
 function InverterNode(node)
     local self = {}
-    self.name = "inverted " .. node.name
+    self.name = "inverted (" .. node.name .. ")"
     self.child = node
 
     self.query = function (self, owner, enemy)
