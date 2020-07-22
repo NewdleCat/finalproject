@@ -17,7 +17,7 @@ function love.load(args)
     TreeFont = love.graphics.newFont("comicneue.ttf", 16)
     love.graphics.setFont(Font)
     DevPlayerEnabled = true
-    
+
     -- if you give the program "player" as a command line argument, you can be a participant in the tournament
     love.audio.setVolume(0.2)
     for i,v in pairs(args) do
@@ -350,11 +350,40 @@ function DrawOval(x,y, r, squish)
 end
 
 function GenerateColorscheme()
-    return {
-        {63/255, 63/255, 76/255}, -- legs/top of hat (darker, more unsaturated version of cloak)
-        {102/255, 102/255, 107/255}, -- cloak (unsaturated color)
-        {1/4, 1/2, 1}, -- face, keep it a bright color (not skintone)
+    drips = {
+        {
+            {63/255, 63/255, 76/255},
+            {102/255, 102/255, 107/255},
+            {1/4, 1/2, 1},
+        },
+        {
+            {215/255, 139/255, 156/255},
+            {255/255, 179/255, 186/255},
+            {1/4, 1/2, 1},
+        },
+        {
+            {215/255, 183/255, 156/255},
+            {255/255, 223/255, 186/255},
+            {1/4, 1/2, 1},
+        },
+        {
+            {215/255, 215/255, 156/255},
+            {255/255, 255/255, 186/255},
+            {1/4, 1/2, 1},
+        },
+        {
+            {156/255, 215/255, 161/255},
+            {186/255, 255/255, 201/255},
+            {1/4, 1/2, 1},
+        },
+        {
+            {156/255, 215/255, 215/255},
+            {186/255, 255/255, 255/255},
+            {1/4, 1/2, 1},
+        },
     }
+
+    return drips[love.math.random(0, #drips)]
 end
 
 function CreateColorList()
