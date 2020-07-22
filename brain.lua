@@ -23,7 +23,7 @@ function CreateBrainList()
 
     -- define some subtrees to generate behavior trees out of
     
-    -- EITHER pick snipeOnSight OR snipeToKill
+    -- Only pick one snipe
     createSubtree("snipeOnSight", {
         NewLineOfSightNode(),
         NewSnipeEnemyNode(),
@@ -34,11 +34,105 @@ function CreateBrainList()
         InverterNode(NewCheckEnemyHealthNode(75)),
         NewSnipeEnemyNode(),
     })
-    -- end of sniper nodes
+
+    createSubtree("snipeOnScratch", {
+        NewLineOfSightNode(),
+        InverterNode(NewCheckOwnerHealthNode(75)),
+        NewSnipeEnemyNode(),
+    })
+
+    createSubtree("snipeOnWound", {
+        NewLineOfSightNode(),
+        InverterNode(NewCheckOwnerHealthNode(50)),
+        NewSnipeEnemyNode(),
+    })
+
+    createSubtree("snipeOnGash", {
+        NewLineOfSightNode(),
+        InverterNode(NewCheckOwnerHealthNode(25)),
+        NewSnipeEnemyNode(),
+    })
+    -- end of sniper trees
+
+    -- Only pick one zap
+    createSubtree("zapInRange", {
+        NewLineOfSightNode(),
+        NewWithinRangeNode(5),
+        NewZapEnemyNode(),
+    })
+
+    createSubtree("zapToKill", {
+        NewLineOfSightNode(),
+        NewWithinRangeNode(5),
+        InverterNode(NewCheckEnemyHealthNode(20)),
+        NewZapEnemyNode(),
+    })
+
+    createSubtree("zapWithMana", {
+        NewLineOfSightNode(),
+        NewWithinRangeNode(5),
+        NewCheckOwnerManaNode(75),
+        NewZapEnemyNode(),
+    })
+
+    createSubtree("zapOnScratch", {
+        NewLineOfSightNode(),
+        NewWithinRangeNode(5),
+        InverterNode(NewCheckOwnerHealthNode(75)),
+        NewZapEnemyNode(),
+    })
+
+    createSubtree("zapOnWound", {
+        NewLineOfSightNode(),
+        NewWithinRangeNode(5),
+        InverterNode(NewCheckOwnerHealthNode(50)),
+        NewZapEnemyNode(),
+    })
+
+    createSubtree("zapOnGash", {
+        NewLineOfSightNode(),
+        NewWithinRangeNode(5),
+        InverterNode(NewCheckOwnerHealthNode(25)),
+        NewZapEnemyNode(),
+    })
+    -- end of zap trees
+
+    -- Only pick one fireball
+    createSubtree("fireballInRange", {
+        NewWithinRangeNode(7),
+        InverterNode(NewWithinRangeNode(4)),
+        NewFireballEnemyNode(),
+    })
+
+    createSubtree("fireballOnScratch", {
+        NewWithinRangeNode(7),
+        InverterNode(NewWithinRangeNode(4)),
+        InverterNode(NewCheckOwnerHealthNode(75)),
+        NewFireballEnemyNode(),
+    })
+
+    createSubtree("fireballOnWound", {
+        NewWithinRangeNode(7),
+        InverterNode(NewWithinRangeNode(4)),
+        InverterNode(NewCheckOwnerHealthNode(50)),
+        NewFireballEnemyNode(),
+    })    
+
+    createSubtree("fireballOnGash", {
+        NewWithinRangeNode(7),
+        InverterNode(NewWithinRangeNode(4)),
+        InverterNode(NewCheckOwnerHealthNode(25)),
+        NewFireballEnemyNode(),
+    })
 
     -- Only pick one retreat
     createSubtree("strongRetreat", {
         InverterNode(NewCheckOwnerHealthNode(75)),
+        NewTakeCoverNode(),
+    })
+
+    createSubtree("69Retreat", {
+        InverterNode(NewCheckOwnerHealthNode(69)),
         NewTakeCoverNode(),
     })
 
@@ -51,7 +145,7 @@ function CreateBrainList()
         InverterNode(NewCheckOwnerHealthNode(25)),
         NewTakeCoverNode(),
     })
-    -- end of retreat nodes
+    -- end of retreat trees
 
     -- Only pick one heal
     createSubtree("weakHealInCover", {
@@ -65,7 +159,17 @@ function CreateBrainList()
         InverterNode(NewLineOfSightNode()),
         AlwaysTrueNode(NewHealNode()),
     })
-    -- end of heals
+
+    createSubtree("weakHealInPlace", {
+        InverterNode(NewCheckOwnerHealthNode(25)),
+        AlwaysTrueNode(NewHealNode()),
+    })
+
+    createSubtree("healInPlace", {
+        InverterNode(NewCheckOwnerHealthNode(50)),
+        AlwaysTrueNode(NewHealNode()),
+    })
+    -- end of heal trees
 
     -- Only pick one default movement
     createSubtree("runAway", {
@@ -75,7 +179,18 @@ function CreateBrainList()
     createSubtree("advance", {
         NewWalkTowardsEnemyNode(),
     })
-    -- end of default movements
+    -- end of default movement trees
+
+    -- extra movement conditions
+    createSubtree("runAwayWhenClose", {
+        NewWithinRangeNode(6),
+        NewTakeCoverNode(),
+    })
+
+    createSubtree("advanceWhenFar", {
+        InverterNode(NewWithinRangeNode(7)),
+        NewWalkTowardsEnemyNode(),
+    })
 
     createSubtree("runAwayFromDamage", {
         NewIsTakingDamageRightNowNode(),
@@ -96,7 +211,24 @@ function CreateBrainList()
             Subtrees.runAway,
         },
 
+        zapAndSnipe = {
+            Subtrees.runAwayFromDamage,
+            Subtrees.zapWithMana,
+            Subtrees.snipeToKill,
+            Subtrees.advance,
+            Subtrees.weakHealInCover,
+            Subtrees.weakRetreat,
+        },
 
+        fireMage = {
+            Subtrees.runAwayFromDamage,
+            Subtrees.fireballInRange,
+            Subtrees.healInPlace,
+            Subtrees.zapInRange,
+            Subtrees.advanceWhenFar,
+            Subtrees.runAwayWhenClose,
+            Subtrees.retreat,
+        },
     }
 
     local list = {}
@@ -752,35 +884,35 @@ function NewHealNode()
     return self
 end
 
--- function NewCheckOwnerManaNode(mana)
---     local self = {}
---     self.name = "CheckOwnerMana"
+function NewCheckOwnerManaNode(mana)
+    local self = {}
+    self.name = "CheckOwnerMana"
 
---     self.query = function (self, owner, enemy)
---         if owner.mana >= mana then
---             return true
---         else
---             return false
---         end
---     end
+    self.query = function (self, owner, enemy)
+        if owner.mana >= mana then
+            return true
+        else
+            return false
+        end
+    end
 
---     return self
--- end
+    return self
+end
 
--- function NewCheckEnemyManaNode(mana)
---     local self = {}
---     self.name = "CheckEnemyMana"
+function NewCheckEnemyManaNode(mana)
+    local self = {}
+    self.name = "CheckEnemyMana"
 
---     self.query = function (self, owner, enemy)
---         if enemy.mana >= mana then
---             return true
---         else
---             return false
---         end
---     end
+    self.query = function (self, owner, enemy)
+        if enemy.mana >= mana then
+            return true
+        else
+            return false
+        end
+    end
 
---     return self
--- end
+    return self
+end
 
 function NewCheckOwnerHealthNode(health)
     local self = {}
@@ -867,9 +999,11 @@ end
 function NewWithinRangeNode(range)
     local self = {}
     self.name = "WithinRange"
-    self.range = range
+    self.range = range*64
 
     self.query = function (self, owner, enemy)
-        return Distance(x,y, enemy.x,enemy.y) < self.range
+        return Distance(owner.x, owner.y, enemy.x,enemy.y) <= self.range
     end
+
+    return self
 end

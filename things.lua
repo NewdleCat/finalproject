@@ -91,7 +91,7 @@ function NewZap(x,y, direction, offset, owner)
         if not self.dieing then
             for i,v in pairs(ThingList) do
                 if v.living and Distance(v.x,v.y, self.x,self.y) <= 30 and v ~= self.owner then
-                    v.health = v.health - 20
+                    v.health = v.health - 5
                     return false
                 end
             end
