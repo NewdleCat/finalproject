@@ -240,6 +240,78 @@ function CreateBrainList()
     --   advanceUntilNear + strafe
     --   peekAroundCorner
     --   advanceWhenFar + runAwayWhenClose (for fireball specialists)
+    local damageControl = {
+        {
+            Subtrees.runAwayFromSnipe,
+            Subtrees.runAwayFromDamage,
+        },
+
+        {
+            Subtrees.runAwayFromSnipe,
+            Subtrees.retreatWhenBelowHalf,
+            Subtrees.healInCover,
+        },
+
+        {
+            Subtrees.healInCover,
+        },
+
+        {
+            Subtrees.runAwayFromSnipe,
+            Subtrees.runAwayFromDamage,
+        },
+
+        {},
+    }
+
+    local attackPattern = {
+        {
+            Subtrees.fireballInRange,
+            Subtrees.zapInRange,
+        },
+
+        {
+            Subtrees.snipeOnSight,
+            Subtrees.fireballInRange,
+            Subtrees.zapInRange,
+        },
+
+        {
+            Subtrees.snipeOnSight,
+            Subtrees.zapWithMana,
+        },
+
+        {
+            Subtrees.fireballInRange,
+            Subtrees.healInPlace,
+            Subtrees.zapInRange,
+        },
+
+        {
+            Subtrees.snipeToKill,
+            Subtrees.zapWithMana,
+        },
+    }
+
+    local movement = {
+        {
+            Subtrees.advanceUntilNear,
+            Subtrees.strafe,
+        },
+
+        {
+            Subtrees.peekAroundCorner,
+        },
+
+        {
+            Subtrees.runAway,
+        },
+
+        {
+            Subtrees.advanceWhenFar,
+            Subtrees.runAwayWhenClose,
+        },
+    }
 
     local botTemplates = {
         poggers = {
@@ -360,14 +432,35 @@ function CreateBrainList()
             -- root node is always a selector
             -- selectors always stop and return when one of their children returns true
 
-            -- choose a random template from the list of botTemplates
-            local templateNames = {}
-            for name,temp in pairs(botTemplates) do
-                table.insert(templateNames, name)
+            local template = {}
+            handcraftedTemplates = false
+            if handcraftedTemplates then
+                -- choose a random template from the predefined list of botTemplates
+
+                local templateNames = {}
+                for name,temp in pairs(botTemplates) do
+                    table.insert(templateNames, name)
+                end
+                local templateName = Choose(templateNames)
+                template = botTemplates[templateName]
+                brain.root = NewSelectorNode(templateName)
+            else
+                -- generate one on the fly from parts!
+
+                for i,v in pairs(Choose(damageControl)) do
+                    table.insert(template, v)
+                end
+
+                for i,v in pairs(Choose(attackPattern)) do
+                    table.insert(template, v)
+                end
+
+                for i,v in pairs(Choose(movement)) do
+                    table.insert(template, v)
+                end
+
+                brain.root = NewSelectorNode("generatedBot")
             end
-            local templateName = Choose(templateNames)
-            local template = botTemplates[templateName]
-            brain.root = NewSelectorNode(templateName)
 
             -- add all of the subtrees in the template in order to the behavior tree
             for _,subtree in ipairs(template) do
