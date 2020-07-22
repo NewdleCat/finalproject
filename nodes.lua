@@ -1,7 +1,7 @@
 function NewSequenceNode(name)
     local self = {}
     self.children = {}
-    self.name = name .. " sequence" or "sequence"
+    self.name = name or "sequence"
 
     self.query = function (self, owner, enemy)
         -- go through children in order, querying them
@@ -19,10 +19,10 @@ function NewSequenceNode(name)
     return self
 end
 
-function NewSelectorNode()
+function NewSelectorNode(name)
     local self = {}
     self.children = {}
-    self.name = "selector"
+    self.name = name or "selector"
 
     self.query = function (self, owner, enemy)
         -- go through children in order, querying them
@@ -92,6 +92,19 @@ function NewWalkTowardsEnemyNode()
         local nx,ny = PathfindAndGiveDirections(ox,oy, gx,gy)
         local angle = GetAngle(owner.x,owner.y, nx,ny)
         owner.moveVector[1], owner.moveVector[2] = math.cos(angle), math.sin(angle)
+        return true
+    end
+
+    return self
+end
+
+function NewStrafeNode()
+    local self = {}
+    self.name = "strafe around enemy"
+
+    self.query = function (self, owner, enemy)
+        owner.moveVector[1] = math.cos(owner.direction + math.pi/2)
+        owner.moveVector[2] = math.sin(owner.direction + math.pi/2)
         return true
     end
 

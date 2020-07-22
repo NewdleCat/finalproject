@@ -140,7 +140,7 @@ function CreateBrainList()
         NewTakeCoverNode(),
     })
 
-    createSubtree("retreat", {
+    createSubtree("retreatWhenBelowHalf", {
         InverterNode(NewCheckOwnerHealthNode(50)),
         NewTakeCoverNode(),
     })
@@ -161,7 +161,7 @@ function CreateBrainList()
     createSubtree("healInCover", {
         InverterNode(NewCheckOwnerHealthNode(50)),
         InverterNode(NewLineOfSightNode()),
-        NewHealNode(),
+        AlwaysTrueNode(NewHealNode()),
     })
 
     createSubtree("weakHealInPlace", {
@@ -207,6 +207,11 @@ function CreateBrainList()
         NewWalkTowardsEnemyNode(),
     })
 
+    createSubtree("advanceUntilNear", {
+        InverterNode(NewWithinRangeNode(3)),
+        NewWalkTowardsEnemyNode(),
+    })
+
     createSubtree("peekAroundCorner", {
         InverterNode(NewLineOfSightNode()),
         AlwaysFalseNode(NewWalkTowardsEnemyNode()),
@@ -214,30 +219,36 @@ function CreateBrainList()
 
     createSubtree("runAwayFromDamage", {
         NewIsTakingDamageRightNowNode(),
-        NewWalkAwayFromEnemyNode(),
+        NewTakeCoverNode(),
+    })
+
+    createSubtree("strafe", {
+        NewStrafeNode(),
     })
 
     local botTemplates = {
-        test = {
+        poggers = {
+            Subtrees.runAwayFromDamage,
+            Subtrees.fireballInRange,
+            Subtrees.zapInRange,
+            Subtrees.advanceUntilNear,
+            Subtrees.strafe,
+        },
+
+        patientSniper = {
+            Subtrees.retreatWhenBelowHalf,
+            Subtrees.healInCover,
             Subtrees.snipeOnSight,
-            Subtrees.advance,
+            Subtrees.fireballInRange,
+            Subtrees.zapInRange,
+            --Subtrees.runAwayWhenClose,
+            Subtrees.peekAroundCorner,
         },
     }
         --[[
         ]]
 
         --[[
-        superAggro = {
-            Subtrees.retreat,
-            Subtrees.healInCover,
-            --Subtrees.snipeToKill,
-            Subtrees.fireballInRange,
-            Subtrees.zapInRange,
-            --Subtrees.runAwayWhenClose,
-            Subtrees.advance,
-            --Subtrees.heal,
-        },
-
         chicken = {
             Subtrees.zapWithMana,
             Subtrees.runAway,
@@ -257,7 +268,7 @@ function CreateBrainList()
         sneakySniper = {
             Subtrees.runAwayFromDamage,
             Subtrees.healInCover,
-            Subtrees.retreat,
+            Subtrees.retreatWhenBelowHalf,
             Subtrees.snipeOnSight,
             Subtrees.advance,
         },
@@ -284,7 +295,7 @@ function CreateBrainList()
             Subtrees.zapInRange,
             Subtrees.advanceWhenFar,
             Subtrees.runAwayWhenClose,
-            Subtrees.retreat,
+            Subtrees.retreatWhenBelowHalf,
         },
     }
     ]]
@@ -300,14 +311,15 @@ function CreateBrainList()
 
             -- root node is always a selector
             -- selectors always stop and return when one of their children returns true
-            brain.root = NewSelectorNode()
 
             -- choose a random template from the list of botTemplates
-            local iteratableTemplates = {}
-            for _,temp in pairs(botTemplates) do
-                table.insert(iteratableTemplates, temp)
+            local templateNames = {}
+            for name,temp in pairs(botTemplates) do
+                table.insert(templateNames, name)
             end
-            local template = Choose(iteratableTemplates)
+            local templateName = Choose(templateNames)
+            local template = botTemplates[templateName]
+            brain.root = NewSelectorNode(templateName)
 
             -- add all of the subtrees in the template in order to the behavior tree
             for _,subtree in ipairs(template) do
@@ -574,7 +586,7 @@ function PathfindAndGiveDirections(ox,oy, gx,gy, debugPrint)
             local cost = 1 + this.cost
 
             -- make fire tiles cost more
-            if GetTile(this[1]+x,this[2]+y) == FIRE_TILE then cost = cost + 2 end
+            if GetTile(this[1]+x,this[2]+y) == FIRE_TILE then cost = cost + 40 end
 
             -- if this tile is walkable and either i havn't been here or this route is cheaper
             if IsTileWalkable(this[1]+x, this[2]+y) and (not checked[this[1]+x][this[2]+y] or cost < checked[this[1]+x][this[2]+y].cost) then

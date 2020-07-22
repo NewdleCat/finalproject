@@ -21,7 +21,7 @@ function NewFireball(x,y, direction)
         self.y = self.y + math.sin(self.direction)*speed
 
         local tx,ty = WorldToTileCoords(self.x,self.y)
-        if IsTileWalkable(tx,ty) and GetTile(tx,ty) ~= FIRE_TILE and Distance(tx,ty, self.startX,self.startY) > 1.5 then
+        if IsTileWalkable(tx,ty) and GetTile(tx,ty) ~= FIRE_TILE and Distance(tx,ty, self.startX,self.startY) >= 1 then
             SetTile(tx,ty, FIRE_TILE)
         end
 
