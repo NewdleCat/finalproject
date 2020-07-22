@@ -130,7 +130,10 @@ function NewTakeCoverNode(showDebug)
             for x=0, 15 do
                 if not CheckLineOfSight(x*64 + 32,y*64 + 32, enemy.x,enemy.y) and GetTile(x,y) == FLOOR_TILE then
                     sight[x][y] = true
+
+                    -- find the best tile that compromises between being close to you and far from the enemy
                     local thisCost = Distance(x,y, ox,oy) - Distance(x,y, gx,gy)
+
                     if not goalCost or thisCost < goalCost then
                         goalCost = thisCost
                         pick = {x,y}
@@ -145,18 +148,24 @@ function NewTakeCoverNode(showDebug)
             print("go to " .. pick[1] .. ", " .. pick[2])
         end
 
+        -- now that a goal has been found, pathfind towards it
         if #pick > 0 and (pick[1] ~= ox or pick[2] ~= oy) then
             local nx,ny = PathfindAndGiveDirections(ox,oy, pick[1],pick[2])
             local angle = GetAngle(owner.x,owner.y, nx,ny)
             owner.moveVector[1], owner.moveVector[2] = math.cos(angle), math.sin(angle)
             return true
         end
+
         return false
     end
 
     return self
 end
 
+--[[
+--
+-- take cover is better in every way, use that instead
+--
 function NewWalkAwayFromEnemyNode()
     local self = {}
     self.name = "walk away from enemy"
@@ -170,6 +179,7 @@ function NewWalkAwayFromEnemyNode()
 
     return self
 end
+]]
 
 function NewSnipeEnemyNode()
     local self = {}

@@ -225,7 +225,7 @@ function NewWizard(x,y, colorScheme)
     end
 
     self.healSpell = function (self)
-        if self.mana >= 50 then
+        if self.mana >= 50 and self.healTimer <= 0 then
             self.mana = self.mana - 50
             --local x,y = WorldToTileCoords(self.x,self.y)
             --SetTile(x,y, HEAL_TILE)

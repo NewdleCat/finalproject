@@ -235,27 +235,43 @@ function CreateBrainList()
             Subtrees.strafe,
         },
 
-        patientSniper = {
+        patient = {
             Subtrees.retreatWhenBelowHalf,
             Subtrees.healInCover,
             Subtrees.snipeOnSight,
             Subtrees.fireballInRange,
             Subtrees.zapInRange,
-            --Subtrees.runAwayWhenClose,
             Subtrees.peekAroundCorner,
         },
-    }
-        --[[
-        ]]
 
-        --[[
-        chicken = {
+        camper = {
+            Subtrees.healInCover,
+            Subtrees.snipeOnSight,
             Subtrees.zapWithMana,
             Subtrees.runAway,
-            --Subtrees.hideAndHeal,
         },
+
+        flamethrower = {
+            Subtrees.runAwayFromDamage,
+            Subtrees.fireballInRange,
+            Subtrees.healInPlace,
+            Subtrees.zapInRange,
+            Subtrees.advanceWhenFar,
+            Subtrees.runAwayWhenClose,
+            Subtrees.retreatWhenBelowHalf,
+        },
+
+        --[[
+        zapAndSnipe = {
+            Subtrees.runAwayFromDamage,
+            Subtrees.zapWithMana,
+            Subtrees.snipeToKill,
+            Subtrees.advance,
+            Subtrees.weakHealInCover,
+            Subtrees.weakRetreat,
+        },
+        ]]
     }
-    ]]
 
         --[[
         fireballCamper = {
@@ -279,24 +295,6 @@ function CreateBrainList()
             Subtrees.runAway,
         },
 
-        zapAndSnipe = {
-            Subtrees.runAwayFromDamage,
-            Subtrees.zapWithMana,
-            Subtrees.snipeToKill,
-            Subtrees.advance,
-            Subtrees.weakHealInCover,
-            Subtrees.weakRetreat,
-        },
-
-        fireMage = {
-            Subtrees.runAwayFromDamage,
-            Subtrees.fireballInRange,
-            Subtrees.healInPlace,
-            Subtrees.zapInRange,
-            Subtrees.advanceWhenFar,
-            Subtrees.runAwayWhenClose,
-            Subtrees.retreatWhenBelowHalf,
-        },
     }
     ]]
 
@@ -569,11 +567,6 @@ function PathfindAndGiveDirections(ox,oy, gx,gy, debugPrint)
         -- pop off queue
         local this = table.remove(frontier, 1)
 
-        if debugPrint then
-            print("------")
-            PrintMap(checked)
-        end
-
         if not this then break end
 
         -- if this is the goal, end loop
@@ -583,24 +576,32 @@ function PathfindAndGiveDirections(ox,oy, gx,gy, debugPrint)
         end
 
         local function addNeighbor(x,y)
-            local cost = 1 + this.cost
+            local cost = this.cost + 1
+
+            local pathClear = IsTileWalkable(x,y)
+            local dx = x - this[1]
+            local dy = y - this[2]
+            if dx ~= 0 and dy ~= 0 then
+                pathClear = pathClear and (IsTileWalkable(this[1] + dx, this[2]) or IsTileWalkable(this[1], this[2] + dy))
+                cost = this.cost + 0.7071
+            end
 
             -- make fire tiles cost more
-            if GetTile(this[1]+x,this[2]+y) == FIRE_TILE then cost = cost + 40 end
+            if GetTile(x,y) == FIRE_TILE then cost = cost + 40 end
 
             -- if this tile is walkable and either i havn't been here or this route is cheaper
-            if IsTileWalkable(this[1]+x, this[2]+y) and (not checked[this[1]+x][this[2]+y] or cost < checked[this[1]+x][this[2]+y].cost) then
-                local next = {this[1]+x, this[2]+y, cost=cost, priority=cost+Distance(this[1]+x,this[2]+y, gx,gy), parent=this}
+            if pathClear and (not checked[x][y] or cost < checked[x][y].cost) then
+                local next = {x,y, cost=cost, priority=cost+Distance(x,y, gx,gy), parent=this}
                 table.insert(frontier, next)
-                checked[this[1]+x][this[2]+y] = next
+                checked[x][y] = next
             end
         end
 
         -- add neighbors (cardinal directions)
         for xx=-1,1 do
             for yy=-1,1 do
-                if xx == 0 or yy == 0 and not (xx == 0 and yy == 0) then
-                    addNeighbor(xx,yy)
+                if not (xx == 0 and yy == 0) then
+                    addNeighbor(this[1]+xx,this[2]+yy)
                 end
             end
         end
@@ -609,6 +610,11 @@ function PathfindAndGiveDirections(ox,oy, gx,gy, debugPrint)
         table.sort(frontier, function (a,b)
             return a.priority < b.priority
         end)
+    end
+
+    if debugPrint then
+        print("------------------------")
+        PrintMap(checked)
     end
 
     -- go back until at 2nd node

@@ -191,9 +191,11 @@ function love.draw()
     if MatchStartTime > 0 then
         love.graphics.setFont(CountdownFont)
         local scale = Conversion(1, 0.5/4, 1,0, 1 - ((MatchStartTime%1)^2))
+        love.graphics.setColor(0.8, 0.8, 0.8, Conversion(1,0, 0.85,1, 1 - MatchStartTime%1))
         love.graphics.print(text, love.graphics.getWidth()/2 - CountdownFont:getWidth(text)*scale/2, love.graphics.getHeight()/2 - 40 - CountdownFont:getHeight(text)*scale/2, 0, scale,scale)
         love.graphics.setFont(Font)
     end
+    love.graphics.setColor(0.8, 0.8, 0.8)
 
     -- draw fastforward icon
     if SimulationMultiplier > 1 then
@@ -201,7 +203,7 @@ function love.draw()
         local sep = 25
         love.graphics.circle("fill", cx-sep,cy, 80,3)
         love.graphics.circle("fill", cx+sep,cy, 80,3)
-        love.graphics.print("x" .. math.floor(SimulationMultiplier + 0.5), cx,cy + 100)
+        love.graphics.print("x" .. math.floor(SimulationMultiplier + 0.5), cx,cy + 65)
     end
 
     -- draw win text when match is over
@@ -434,7 +436,7 @@ function GenerateColorscheme()
         -- green
         {
             {63/255, 80/255, 63/255},
-            {102/255, 112/255, 102/255},
+            {95/255, 112/255, 95/255},
         },
     }
 
