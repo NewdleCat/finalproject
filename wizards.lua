@@ -277,6 +277,7 @@ function NewPlayer(x,y, colorScheme)
     -- this acts as inheritence, inheriting the stuff that the base Wizard class has
     local self = NewWizard(x,y, colorScheme)
     self.name = "playerwizard"
+    self.cameraTimer = 0
 
     -- store the inherited update so that we can call it in our new update function
     self.parentUpdate = self.update
@@ -306,8 +307,15 @@ function NewPlayer(x,y, colorScheme)
 
         -- center the camera on me
         -- but bias it in the direction of the mouse
-        Camera.x = (self.x*6 + mousex)/7 - (love.graphics.getWidth()/2)*Camera.zoom
-        Camera.y = (self.y*6 + mousey)/7 - (love.graphics.getHeight()/2)*Camera.zoom
+        local cx,cy = (self.x*6 + mousex)/7 - (love.graphics.getWidth()/2)*Camera.zoom, (self.y*6 + mousey)/7 - (love.graphics.getHeight()/2)*Camera.zoom
+        self.cameraTimer = self.cameraTimer + dt
+        if self.cameraTimer < 1 then
+            Camera.x = Lerp(Camera.x, cx, 0.2)
+            Camera.y = Lerp(Camera.y, cy, 0.2)
+        else
+            Camera.x = cx
+            Camera.y = cy
+        end
 
         -- only stay alive while i have health remaining
         return stillAlive

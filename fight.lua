@@ -113,6 +113,7 @@ function LoadMatch()
 
     -- set a time limit for the match and how long the victory animation should be
     MatchTimeLimit = 60
+    MatchStartTime = 4
     MatchWinTime = 5
     WinningWizard = nil
     MatchOver = false
@@ -120,17 +121,35 @@ function LoadMatch()
     KNOCKOUT = 1
     TIMEOUT = 2
     WinType = KNOCKOUT
+
+    love.audio.play(Sounds.countdown)
 end
 
 function UpdateMatch()
     UpdateController = UpdateController - 1/60
 
     -- run the update function multiple times based on the SimulationMultiplier variable
-    for i=1, SimulationMultiplier do
+    for s=1, SimulationMultiplier do
         local wasMatchOver = MatchOver
 
         -- a global timer that's used for shader code
         Timer = Timer + 1/60
+
+        -- for some weird reason i can't figure out, even tho SimulationMultiplier is higher than 1 in the intro
+        -- it doesn't do the for loop multiple times (which seems impossible!)
+        -- so to fix this, i just multiplied the deltatime by SimulationMultiplier
+        if MatchStartTime > 0 then
+            local lastMatchStartTime = MatchStartTime
+            MatchStartTime = MatchStartTime - SimulationMultiplier*1/60
+
+            if lastMatchStartTime > 1 and MatchStartTime <= 1 then
+                love.audio.play(Sounds.matchstart)
+            end
+
+            if MatchStartTime > 1 then
+                return
+            end
+        end
 
         -- update all things in the ThingList
         for i,thing in pairs(ThingList) do

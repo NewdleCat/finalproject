@@ -13,11 +13,12 @@ function love.load(args)
     ShowVerticalTree = false
     SimulationMultiplier = 1
     PlayerlessSimulationMultiplier = 10
+    CountdownFont = love.graphics.newFont("comicneue.ttf", 200)
     Font = love.graphics.newFont("comicneue.ttf", 40)
     TreeFont = love.graphics.newFont("comicneue.ttf", 16)
     love.graphics.setFont(Font)
     DevPlayerEnabled = true
-    
+
     -- if you give the program "player" as a command line argument, you can be a participant in the tournament
     love.audio.setVolume(0.2)
     for i,v in pairs(args) do
@@ -48,6 +49,8 @@ function love.load(args)
         sniper = love.audio.newSource("sounds/sniper.mp3", "static"),
         heal = love.audio.newSource("sounds/heal.mp3", "static"),
         cheering = love.audio.newSource("sounds/cheering.mp3", "stream"),
+        countdown = love.audio.newSource("sounds/countdown.mp3", "stream"),
+        matchstart = love.audio.newSource("sounds/matchstart.mp3", "stream"),
 
         step1 = love.audio.newSource("sounds/step1.mp3", "static"),
         step2 = love.audio.newSource("sounds/step2.mp3", "static"),
@@ -156,8 +159,21 @@ function love.draw()
     love.graphics.setColor(0.8, 0.8, 0.8)
     love.graphics.print("Time: " .. math.floor(MatchTimeLimit + 0.5), 32,32)
 
+    -- draw countdown text
+    local text = "" .. math.ceil(MatchStartTime -1)
+    if MatchStartTime <= 1 then
+        text = "Go!"
+    end
+    if MatchStartTime > 0 then
+        love.graphics.setFont(CountdownFont)
+        local scale = Conversion(1, 0.5/4, 1,0, 1 - ((MatchStartTime%1)^2))
+        love.graphics.print(text, love.graphics.getWidth()/2 - CountdownFont:getWidth(text)*scale/2, love.graphics.getHeight()/2 - 40 - CountdownFont:getHeight(text)*scale/2, 0, scale,scale)
+        love.graphics.setFont(Font)
+    end
+
+    -- draw fastforward icon
     if SimulationMultiplier > 1 then
-        local cx,cy = 100, love.graphics.getHeight() - 100
+        local cx,cy = love.graphics.getWidth() - 150, 100
         local sep = 25
         love.graphics.circle("fill", cx-sep,cy, 80,3)
         love.graphics.circle("fill", cx+sep,cy, 80,3)
