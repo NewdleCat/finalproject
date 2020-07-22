@@ -98,6 +98,23 @@ function NewWalkTowardsEnemyNode()
     return self
 end
 
+function NewFleeFromEnemyNode()
+    local self = {}
+    self.name = "flee from enemy"
+
+    self.query = function (self, owner, enemy)
+        local ox,oy = WorldToTileCoords(owner.x,owner.y)
+        local gx,gy = WorldToTileCoords(enemy.x,enemy.y)
+        local nx,ny = PathfindAndGiveDirections( gx,gy,ox,oy)
+        local angle = GetAngle(owner.x,owner.y, nx,ny)
+        owner.moveVector[1], owner.moveVector[2] = math.cos(angle), math.sin(angle)
+        return true
+    end
+
+    return self
+end
+
+
 function NewStrafeNode()
     local self = {}
     self.name = "strafe around enemy"
@@ -122,6 +139,17 @@ function NewIsEnemySnipingNode()
     return self
 end
 
+function NewIsFireballAttackFreshNode()
+    local self = {}
+    self.name = "is fireball attack fresh"
+
+    self.query = function (self, owner, enemy)
+        return owner.fireballAttackFresh > 0 or enemy.fireballAttackFresh > 0
+    end
+
+    return self
+end
+
 function NewIsEnemyApproachingNode()
     local self = {}
     self.name = "is enemy approaching"
@@ -132,6 +160,7 @@ function NewIsEnemyApproachingNode()
 
     return self
 end
+
 
 function NewTakeCoverNode(showDebug)
     local self = {}

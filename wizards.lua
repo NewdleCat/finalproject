@@ -20,6 +20,7 @@ function NewWizard(x,y, colorScheme)
     self.snipeChargeupTimerMax = 1.25
     self.enemyDistance = nil
     self.enemyApproaching = 0
+    self.fireballAttackFresh = 0
 
     self.colorScheme = colorScheme
 
@@ -231,6 +232,7 @@ function NewWizard(x,y, colorScheme)
     self.fireballAttack = function (self)
         if self.mana >= 35 then
             self.mana = self.mana - 35
+            self.fireballAttackFresh = 1
             AddToThingList(NewFireball(self.x,self.y+14, self.direction))
         end
     end

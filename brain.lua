@@ -178,7 +178,6 @@ function CreateBrainList()
         NewHealNode(),
     })
     -- end of heal trees
-    -- end of heal trees
 
     -- Only pick one default movement
     createSubtree("runAway", {
@@ -212,6 +211,11 @@ function CreateBrainList()
         NewWalkTowardsEnemyNode(),
     })
 
+    createSubtree("seekAndFleePattern", {
+        NewWalkTowardsEnemyNode(),
+        NewFleeFromEnemyNode(),
+    })
+
     createSubtree("peekAroundCorner", {
         InverterNode(NewLineOfSightNode()),
         NewWalkTowardsEnemyNode(),
@@ -237,6 +241,11 @@ function CreateBrainList()
         NewWalkTowardsEnemyNode(),
     })
 
+    createSubtree("avoidFireDamage", {
+        NewIsFireballAttackFreshNode(),
+        NewTakeCoverNode(),
+    })
+
     -- a recipe that works well for building AIs
     --   damage control
     --   attack pattern
@@ -250,6 +259,7 @@ function CreateBrainList()
         {
             Subtrees.runAwayFromSnipe,
             Subtrees.runAwayFromDamage,
+            Subtrees.avoidFireDamage,
         },
 
         {
@@ -312,6 +322,7 @@ function CreateBrainList()
             -- need some way to avoid stalemates here
             Subtrees.peekAroundCorner,
             Subtrees.approachCamper,
+            Subtrees.seekAndFleePattern,
         },
 
         --{
@@ -323,6 +334,11 @@ function CreateBrainList()
             Subtrees.advanceWhenFar,
             Subtrees.runAwayWhenClose,
         },
+
+        {
+            Subtrees.seekAndFleePattern,
+            Subtrees.strafe,
+        }
 
         -- research if there are any other good movement patterns
     }
