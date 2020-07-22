@@ -153,7 +153,7 @@ function love.draw()
     DrawMatch()
 
     -- draw the time remaining in the upper left corner
-    love.graphics.setColor(1, 1, 1)
+    love.graphics.setColor(0.8, 0.8, 0.8)
     love.graphics.print("Time: " .. math.floor(MatchTimeLimit + 0.5), 32,32)
 
     if SimulationMultiplier > 1 then
@@ -189,7 +189,7 @@ function love.draw()
 
     -- draw the vertical behavior trees if enabled
     love.graphics.setFont(TreeFont)
-    love.graphics.setColor(1, 1, 1)
+    love.graphics.setColor(0.8, 0.8, 0.8)
     verticalTree = nil
     if CurrentlyActiveWizards[1].brain ~= nil and ShowVerticalTree then
         love.graphics.print("Wizard " .. CurrentlyActiveWizards[1].id .. createVerticalTree(CurrentlyActiveWizards[1].brain.root), 1350, 500 ,0 , 1)
