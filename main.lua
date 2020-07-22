@@ -10,6 +10,7 @@ function love.load(args)
     UpdateController = 0
     Paused = false
     ShowBehaviorTree = false
+    ShowVerticalTree = false
     SimulationMultiplier = 1
     PlayerlessSimulationMultiplier = 10
     Font = love.graphics.newFont("comicneue.ttf", 40)
@@ -137,6 +138,10 @@ function love.keypressed(key)
     if key == "b" then
         ShowBehaviorTree = not ShowBehaviorTree
     end
+
+    if key == "v" then
+        ShowVerticalTree = not ShowVerticalTree
+    end
 end
 
 function love.wheelmoved(x,y)
@@ -176,10 +181,10 @@ function love.draw()
     love.graphics.setFont(TreeFont)
     love.graphics.setColor(1, 1, 1)
     verticalTree = nil
-    if CurrentlyActiveWizards[1].brain ~= nil and not ShowBehaviorTree then
+    if CurrentlyActiveWizards[1].brain ~= nil and ShowVerticalTree then
         love.graphics.print("Wizard " .. CurrentlyActiveWizards[1].id .. createVerticalTree(CurrentlyActiveWizards[1].brain.root), 1350, 500 ,0 , 1)
     end
-    if CurrentlyActiveWizards[2].brain ~= nil and not ShowBehaviorTree then
+    if CurrentlyActiveWizards[2].brain ~= nil and ShowVerticalTree then
         love.graphics.print("Wizard " .. CurrentlyActiveWizards[2].id .. createVerticalTree(CurrentlyActiveWizards[2].brain.root), 50, 500 ,0 , 1)
     end
 
