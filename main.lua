@@ -99,7 +99,10 @@ function love.update(dt)
 
     -- fast forward matches where the player is not involved
     if not ContainsPlayer then
-        SimulationMultiplier = math.max(Conversion(0,32, 1,FastforwardMax, Fastforward), 1)
+        SimulationMultiplier = math.max(Conversion(0,24, 1,FastforwardMax, Fastforward), 1)
+        if MatchOver then
+            SimulationMultiplier = 1
+        end
     else
         SimulationMultiplier = 1
     end
@@ -407,28 +410,28 @@ function GenerateColorscheme()
             {255/255, 179/255, 186/255},
         },
 
-        -- lighter pink
+        -- blue
         {
-            {215/255, 183/255, 156/255},
-            {255/255, 223/255, 186/255},
+            {49/255,73/255,124/255},
+            {49/255,111/255,124/255},
         },
 
-        -- yellow
+        -- purple
         {
-            {215/255, 215/255, 156/255},
-            {255/255, 255/255, 186/255},
+            {54/255, 49/255, 124/255},
+            {92/255, 49/255, 124/255},
+        },
+
+        -- orange
+        {
+            {124/255,54/255,49/255},
+            {124/255,92/255,49/255},
         },
 
         -- green
         {
-            {156/255, 215/255, 161/255},
-            {186/255, 255/255, 201/255},
-        },
-
-        -- turqouise
-        {
-            {156/255, 215/255, 215/255},
-            {186/255, 255/255, 255/255},
+            {63/255, 80/255, 63/255},
+            {102/255, 112/255, 102/255},
         },
     }
 
