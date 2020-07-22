@@ -383,7 +383,7 @@ function GenerateColorscheme()
         },
     }
 
-    return drips[love.math.random(0, #drips)]
+    return drips[love.math.random(1, 6)]
 end
 
 function CreateColorList()
