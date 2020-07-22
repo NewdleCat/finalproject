@@ -229,6 +229,8 @@ function NewWizard(x,y, colorScheme)
             self.mana = self.mana - 50
             --local x,y = WorldToTileCoords(self.x,self.y)
             --SetTile(x,y, HEAL_TILE)
+            love.audio.stop(Sounds.heal)
+            love.audio.play(Sounds.heal)
             self.healTimer = 4
         end
     end
