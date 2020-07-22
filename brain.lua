@@ -231,42 +231,84 @@ function CreateBrainList()
         NewStrafeNode(),
     })
 
+    -- a recipe that works well for building AIs
+    --   damage control
+    --   attack pattern
+    --   movement
+
+    -- movement strats that work well
+    --   advanceUntilNear + strafe
+    --   peekAroundCorner
+    --   advanceWhenFar + runAwayWhenClose (for fireball specialists)
+
     local botTemplates = {
         poggers = {
+            -- damage control
             Subtrees.runAwayFromSnipe,
             Subtrees.runAwayFromDamage,
+
+            -- attack pattern
             Subtrees.fireballInRange,
             Subtrees.zapInRange,
+
+            -- movement
             Subtrees.advanceUntilNear,
             Subtrees.strafe,
         },
 
         patient = {
+            -- damage control
             Subtrees.runAwayFromSnipe,
             Subtrees.retreatWhenBelowHalf,
             Subtrees.healInCover,
+
+            -- attack pattern
             Subtrees.snipeOnSight,
             Subtrees.fireballInRange,
             Subtrees.zapInRange,
+
+            -- movement
             Subtrees.peekAroundCorner,
         },
 
         camper = {
+            -- damage control
             Subtrees.healInCover,
+
+            -- attack pattern
             Subtrees.snipeOnSight,
             Subtrees.zapWithMana,
+
+            -- movement
             Subtrees.runAway,
         },
 
         flamethrower = {
+            -- damage control
             Subtrees.runAwayFromSnipe,
             Subtrees.runAwayFromDamage,
+
+            -- attack pattern
             Subtrees.fireballInRange,
             Subtrees.healInPlace,
             Subtrees.zapInRange,
+
+            -- movement
             Subtrees.advanceWhenFar,
             Subtrees.runAwayWhenClose,
-            Subtrees.retreatWhenBelowHalf,
+            --Subtrees.retreatWhenBelowHalf,
+        },
+
+        rambo = {
+            -- rambo doesn't have damage control
+
+            -- attack pattern
+            Subtrees.snipeToKill,
+            Subtrees.zapWithMana,
+
+            -- movement
+            Subtrees.advanceUntilNear,
+            Subtrees.strafe,
         },
 
         --[[
