@@ -99,9 +99,6 @@ function AddToThingList(thing)
 end
 
 function love.update(dt)
-    -- if the game is paused, just don't update anything
-    if Paused then return end
-
     -- fast forward matches where the player is not involved
     if not ContainsPlayer then
         SimulationMultiplier = math.max(Conversion(0,24, 1,FastforwardMax, Fastforward), 1)
@@ -111,6 +108,9 @@ function love.update(dt)
     else
         SimulationMultiplier = 1
     end
+
+    -- if the game is paused, just don't update anything
+    if Paused then return end
 
     -- control the update cycle to always run at 60 times per second
     -- we could deltatime every physical interaction in the game, but eh fuck it
@@ -160,16 +160,14 @@ function love.keypressed(key)
 
     if key == "f" then
         if not love.keyboard.isDown("lshift") then
-            Fastforward = Fastforward + 1
-            if Fastforward > FastforwardMax then
-                Fastforward = 1
-            end
+            Fastforward = math.min(Fastforward + 1, FastforwardMax)
         else
-            Fastforward = Fastforward - 1
-            if Fastforward < 1 then
-                Fastforward = FastforwardMax
-            end
+            Fastforward = math.max(Fastforward - 1, 1)
         end
+    end
+
+    if key == "r" then
+        InitializeTournament()
     end
 end
 

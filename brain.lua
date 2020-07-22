@@ -100,7 +100,11 @@ function CreateBrainList()
     -- Only pick one fireball
     createSubtree("fireballInRange", {
         NewWithinRangeNode(7),
-        InverterNode(NewWithinRangeNode(4)),
+        --InverterNode(NewWithinRangeNode(4)),
+        NewFireballEnemyNode(),
+    })
+
+    createSubtree("fireball", {
         NewFireballEnemyNode(),
     })
 
@@ -157,7 +161,7 @@ function CreateBrainList()
     createSubtree("healInCover", {
         InverterNode(NewCheckOwnerHealthNode(50)),
         InverterNode(NewLineOfSightNode()),
-        AlwaysTrueNode(NewHealNode()),
+        NewHealNode(),
     })
 
     createSubtree("weakHealInPlace", {
@@ -169,6 +173,11 @@ function CreateBrainList()
         InverterNode(NewCheckOwnerHealthNode(50)),
         AlwaysTrueNode(NewHealNode()),
     })
+
+    createSubtree("heal", {
+        NewHealNode(),
+    })
+    -- end of heal trees
     -- end of heal trees
 
     -- Only pick one default movement
@@ -177,6 +186,12 @@ function CreateBrainList()
     })
 
     createSubtree("advance", {
+        NewWalkTowardsEnemyNode(),
+    })
+
+    createSubtree("preparedAdvance", {
+        NewCheckOwnerHealthNode(75),
+        NewCheckOwnerManaNode(50),
         NewWalkTowardsEnemyNode(),
     })
     -- end of default movement trees
@@ -194,7 +209,7 @@ function CreateBrainList()
 
     createSubtree("peekAroundCorner", {
         InverterNode(NewLineOfSightNode()),
-        NewWalkTowardsEnemyNode(),
+        AlwaysFalseNode(NewWalkTowardsEnemyNode()),
     })
 
     createSubtree("runAwayFromDamage", {
@@ -203,17 +218,36 @@ function CreateBrainList()
     })
 
     local botTemplates = {
-        test = {
+        --[[
+        ]]
+
+        --[[
+        superAggro = {
+            Subtrees.retreat,
+            Subtrees.healInCover,
+            --Subtrees.snipeToKill,
+            Subtrees.fireballInRange,
+            Subtrees.zapInRange,
+            --Subtrees.runAwayWhenClose,
+            Subtrees.advance,
+            --Subtrees.heal,
+        },
+
+        chicken = {
+            Subtrees.zapWithMana,
+            Subtrees.runAway,
+            --Subtrees.hideAndHeal,
+        },
+    }
+    ]]
+
+        fireballCamper = {
+            Subtrees.healInCover,
+            Subtrees.fireball,
             Subtrees.peekAroundCorner,
             Subtrees.runAway,
         },
 
-        test2 = {
-            Subtrees.advance,
-        },
-    }
-
-    --[[
         sneakySniper = {
             Subtrees.runAwayFromDamage,
             Subtrees.healInCover,
@@ -223,6 +257,7 @@ function CreateBrainList()
         },
 
         coward = {
+            Subtrees.zapWithMana,
             Subtrees.runAwayFromDamage,
             Subtrees.runAway,
         },
@@ -246,7 +281,6 @@ function CreateBrainList()
             Subtrees.retreat,
         },
     }
-    ]]
 
     local list = {}
     for i=1, CONTESTANT_COUNT do
@@ -499,8 +533,7 @@ function PrintMap(checked)
     end
 end
 
--- this isn't a node, this is just a basic pathfinding function
--- this is used by some nodes to do pathfinding
+-- this has now been converted to an A* pathfinder that is biased against going through fire tiles
 function PathfindAndGiveDirections(ox,oy, gx,gy, debugPrint)
     local frontier = {}
     local checked = {}
@@ -526,22 +559,27 @@ function PathfindAndGiveDirections(ox,oy, gx,gy, debugPrint)
             break
         end
 
-        -- add neighbors
-        if IsTileWalkable(this[1]-1, this[2]) and not checked[this[1]-1][this[2]] then
-            checked[this[1]-1][this[2]] = true
-            table.insert(frontier, {this[1]-1, this[2], cost=Distance(this[1]-1, this[2], gx,gy), parent=this})
+        local function addNeighbor(x,y)
+            local cost = Distance(this[1]+x, this[2]+y, gx,gy) + this.cost
+
+            -- make fire tiles cost more
+            if GetTile(this[1]+x,this[2]+y) == FIRE_TILE then cost = cost + 2 end
+
+            -- if this tile is walkable and either i havn't been here or this route is cheaper
+            if IsTileWalkable(this[1]+x, this[2]+y) and (not checked[this[1]+x][this[2]+y] or cost < checked[this[1]+x][this[2]+y].cost) then
+                local next = {this[1]+x, this[2]+y, cost=cost, parent=this}
+                table.insert(frontier, next)
+                checked[this[1]+x][this[2]+y] = next
+            end
         end
-        if IsTileWalkable(this[1]+1, this[2]) and not checked[this[1]+1][this[2]] then
-            checked[this[1]+1][this[2]] = true
-            table.insert(frontier, {this[1]+1, this[2], cost=Distance(this[1]+1, this[2], gx,gy), parent=this})
-        end
-        if IsTileWalkable(this[1], this[2]-1) and not checked[this[1]][this[2]-1] then
-            checked[this[1]][this[2]-1] = true
-            table.insert(frontier, {this[1], this[2]-1, cost=Distance(this[1], this[2]-1, gx,gy), parent=this})
-        end
-        if IsTileWalkable(this[1], this[2]+1) and not checked[this[1]][this[2]+1] then
-            checked[this[1]][this[2]+1] = true
-            table.insert(frontier, {this[1], this[2]+1, cost=Distance(this[1], this[2]+1, gx,gy), parent=this})
+
+        -- add neighbors (cardinal directions)
+        for xx=-1,1 do
+            for yy=-1,1 do
+                if xx == 0 or yy == 0 and not (xx == 0 and yy == 0) then
+                    addNeighbor(xx,yy)
+                end
+            end
         end
 
         -- sort queue by distance to goal
@@ -557,87 +595,8 @@ function PathfindAndGiveDirections(ox,oy, gx,gy, debugPrint)
 
     -- get move to next node in the queue
     if nextNode then
-        local angle = GetAngle(ox,oy, nextNode[1],nextNode[2])
-        return math.cos(angle), math.sin(angle)
+        return nextNode[1]*64 + 32, nextNode[2]*64 + 32
     end
 
     return 0,0
-end
-
-function NewWalkTowardsEnemyNodeAStar()
-    local self = {}
-
-    self.query = function (self, owner, enemy)
-        local frontier = {}
-        local checked = {}
-        local costSoFar = {}
-
-        for i=0, 17 do
-            checked[i] = {}
-            costSoFar[i] = {}
-        end
-        local ox,oy = WorldToTileCoords(owner.x, owner.y)
-        local gx,gy = WorldToTileCoords(enemy.x, enemy.y)
-        local nextNode = nil
-        table.insert(frontier, {ox,oy, cost=Distance(ox,oy, gx,gy), parent=nil})
-        costSoFar[ox][oy] = 0
-
-        -- astar implementation
-        while true do
-            -- pop off queue
-            local this = table.remove(frontier, 1)
-
-            -- if this is the goal, end loop
-            if this[1] == gx and this[2] == gy then
-                nextNode = this
-                break
-            end
-
-            -- add neighbors
-            if IsTileWalkable(this[1]-1, this[2]) and (not checked[this[1]-1][this[2]] or (Distance(this[1]-1, this[2], gx,gy) + costSoFar[this[1]][this[2]]) < costSoFar[this[1]-1][this[2]])then
-                checked[this[1]-1][this[2]] = true
-                local newCost = Distance(this[1]-1, this[2], gx,gy) + costSoFar[this[1]][this[2]]
-                costSoFar[this[1]-1][this[2]] = newCost
-                table.insert(frontier, {this[1]-1, this[2], cost=newCost, parent=this})
-            end
-            if IsTileWalkable(this[1]+1, this[2]) and (not checked[this[1]+1][this[2]] or (Distance(this[1]+1, this[2], gx,gy) + costSoFar[this[1]][this[2]]) < costSoFar[this[1]+1][this[2]])then
-                checked[this[1]+1][this[2]] = true
-                local newCost = Distance(this[1]+1, this[2], gx,gy) + costSoFar[this[1]][this[2]]
-                costSoFar[this[1]+1][this[2]] = newCost
-                table.insert(frontier, {this[1]+1, this[2], cost=newCost, parent=this})
-            end
-            if IsTileWalkable(this[1], this[2]-1) and (not checked[this[1]][this[2]-1] or (Distance(this[1], this[2]-1, gx,gy) + costSoFar[this[1]][this[2]]) < costSoFar[this[1]][this[2]-1]) then
-                checked[this[1]][this[2]-1] = true
-                local newCost = Distance(this[1], this[2]-1, gx,gy) + costSoFar[this[1]][this[2]]
-                costSoFar[this[1]][this[2]-1] = newCost
-                table.insert(frontier, {this[1], this[2]-1, cost=newCost, parent=this})
-            end
-            if IsTileWalkable(this[1], this[2]+1) and (not checked[this[1]][this[2]+1] or (Distance(this[1], this[2]+1, gx,gy) + costSoFar[this[1]][this[2]]) < costSoFar[this[1]][this[2]+1]) then
-                checked[this[1]][this[2]+1] = true
-                local newCost = Distance(this[1], this[2]+1, gx,gy) + costSoFar[this[1]][this[2]]
-                costSoFar[this[1]][this[2]+1] = newCost
-                table.insert(frontier, {this[1], this[2]+1, cost=newCost, parent=this})
-            end
-
-            -- sort queue by distance to goal
-            table.sort(frontier, function (a,b)
-                return a.cost < b.cost
-            end)
-        end
-
-        -- go back until at 2nd node
-        while nextNode.parent do
-            while nextNode.parent.parent do
-                nextNode = nextNode.parent
-            end
-        end
-
-        -- get move to next node in the queue
-        local angle = GetAngle(ox,oy, nextNode[1],nextNode[2])
-        owner.moveVector[1] = math.cos(angle)
-        owner.moveVector[2] = math.sin(angle)
-        return true
-    end
-
-    return self
 end

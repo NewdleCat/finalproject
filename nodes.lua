@@ -91,14 +91,16 @@ function NewWalkTowardsEnemyNode()
     self.query = function (self, owner, enemy)
         local ox,oy = WorldToTileCoords(owner.x,owner.y)
         local gx,gy = WorldToTileCoords(enemy.x,enemy.y)
-        owner.moveVector[1], owner.moveVector[2] = PathfindAndGiveDirections(ox,oy, gx,gy)
+        local nx,ny = PathfindAndGiveDirections(ox,oy, gx,gy)
+        local angle = GetAngle(owner.x,owner.y, nx,ny)
+        owner.moveVector[1], owner.moveVector[2] = math.cos(angle), math.sin(angle)
         return true
     end
 
     return self
 end
 
-function NewTakeCoverNode()
+function NewTakeCoverNode(showDebug)
     local self = {}
     self.name = "take cover"
 
@@ -108,10 +110,15 @@ function NewTakeCoverNode()
 
         -- check all tiles in the map and find ones that aren't visible to the enemy
         local goalCost = nil
+        local sight = {}
+        for i=0, 15 do
+            sight[i] = {}
+        end
         local pick = {}
         for y=0, 15 do
             for x=0, 15 do
-                if not CheckLineOfSight(x,y, gx,gy) and IsTileWalkable(x,y) then
+                if not CheckLineOfSight(x,y, gx,gy) and GetTile(x,y) == FLOOR_TILE then
+                    sight[x][y] = true
                     local thisCost = Distance(x,y, ox,oy) - Distance(x,y, gx,gy)
                     if not goalCost or thisCost < goalCost then
                         goalCost = thisCost
@@ -121,19 +128,19 @@ function NewTakeCoverNode()
             end
         end
 
-        if Distance(pick[1],pick[2], ox,oy) > 1 and #pick > 0 then
-            --print("---------------------------------------")
-            print("going to {" .. pick[1] .. ", " .. pick[2] .. "}")
-            --local check = {}
-            --for i=0, 17 do
-                --check[i] = {}
-            --end
-            --check[pick[1]][pick[2]] = true
-            --PrintMap(check)
-            --print("---------------------------------------")
-            owner.moveVector[1], owner.moveVector[2] = PathfindAndGiveDirections(ox,oy, pick[1],pick[2])
+        if showDebug then
+            print("")
+            PrintMap(sight)
+            print("go to " .. pick[1] .. ", " .. pick[2])
         end
-        return true
+
+        if #pick > 0 and (pick[1] ~= ox or pick[2] ~= oy) then
+            local nx,ny = PathfindAndGiveDirections(ox,oy, pick[1],pick[2])
+            local angle = GetAngle(owner.x,owner.y, nx,ny)
+            owner.moveVector[1], owner.moveVector[2] = math.cos(angle), math.sin(angle)
+            return true
+        end
+        return false
     end
 
     return self

@@ -21,7 +21,7 @@ function NewFireball(x,y, direction)
         self.y = self.y + math.sin(self.direction)*speed
 
         local tx,ty = WorldToTileCoords(self.x,self.y)
-        if IsTileWalkable(tx,ty) and GetTile(tx,ty) ~= FIRE_TILE and (tx ~= self.startX or ty ~= self.startY) then
+        if IsTileWalkable(tx,ty) and GetTile(tx,ty) ~= FIRE_TILE and Distance(tx,ty, self.startX,self.startY) > 1.5 then
             SetTile(tx,ty, FIRE_TILE)
         end
 
@@ -76,6 +76,13 @@ function NewZap(x,y, direction, offset, owner)
 
     love.audio.stop(Sounds.zap)
     love.audio.play(Sounds.zap)
+
+    for i,v in pairs(ThingList) do
+        if v.living and Distance(v.x,v.y, self.x,self.y) <= 30 and v ~= self.owner then
+            v.health = v.health - 5
+            self.dead = true
+        end
+    end
 
     self.update = function (self, dt)
         self.timer = self.timer + dt
