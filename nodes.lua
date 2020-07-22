@@ -111,6 +111,17 @@ function NewStrafeNode()
     return self
 end
 
+function NewIsEnemySnipingNode()
+    local self = {}
+    self.name = "avoid snipe"
+
+    self.query = function (self, owner, enemy)
+        return enemy.snipeChargeupTimer > 0
+    end
+
+    return self
+end
+
 function NewTakeCoverNode(showDebug)
     local self = {}
     self.name = "take cover"

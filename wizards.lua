@@ -16,6 +16,8 @@ function NewWizard(x,y, colorScheme)
     self.moveVector = {0,0}
     self.hurtTimer = 0
     self.healTimer = 0
+    self.snipeChargeupTimer = 0
+    self.snipeChargeupTimerMax = 1.25
 
     self.colorScheme = colorScheme
 
@@ -106,6 +108,13 @@ function NewWizard(x,y, colorScheme)
         end
         self.healTimer = math.max(self.healTimer - dt, 0)
 
+        -- charge up and release sniper shot
+        local lastSnipeChargeupTimer = self.snipeChargeupTimer
+        self.snipeChargeupTimer = math.max(self.snipeChargeupTimer - dt, 0)
+        if lastSnipeChargeupTimer > 0 and self.snipeChargeupTimer <= 0 then
+            AddToThingList(NewSniperShot(self.x + math.cos(self.direction)*64,self.y + math.sin(self.direction)*64, self.direction, self))
+        end
+
         -- apply some friction to be able to stop walking
         local friction = 0.8
         self.xSpeed = self.xSpeed * friction
@@ -143,6 +152,11 @@ function NewWizard(x,y, colorScheme)
         local perspective = 0.6
         local chestx, chesty = self.x, self.y - 14
         love.graphics.line(chestx + math.cos(self.direction)*internalradius,chesty + math.sin(self.direction)*internalradius*perspective, chestx + math.cos(self.direction)*radius, chesty + math.sin(self.direction)*radius*perspective)
+
+        if self.snipeChargeupTimer > 0 then
+            love.graphics.setColor(1,0,0.5)
+            love.graphics.circle("line", chestx + math.cos(self.direction)*radius, chesty + math.sin(self.direction)*radius, Conversion(6,24, self.snipeChargeupTimerMax,0, self.snipeChargeupTimer))
+        end
     end
 
     self.draw = function (self)
@@ -218,17 +232,15 @@ function NewWizard(x,y, colorScheme)
     end
 
     self.sniperAttack = function (self)
-        if self.mana >= 75 then
+        if self.mana >= 75 and self.snipeChargeupTimer <= 0 then
             self.mana = self.mana - 75
-            AddToThingList(NewSniperShot(self.x,self.y, self.direction, self))
+            self.snipeChargeupTimer = self.snipeChargeupTimerMax
         end
     end
 
     self.healSpell = function (self)
         if self.mana >= 50 and self.healTimer <= 0 then
             self.mana = self.mana - 50
-            --local x,y = WorldToTileCoords(self.x,self.y)
-            --SetTile(x,y, HEAL_TILE)
             love.audio.stop(Sounds.heal)
             love.audio.play(Sounds.heal)
             self.healTimer = 4

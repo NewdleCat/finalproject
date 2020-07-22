@@ -222,12 +222,18 @@ function CreateBrainList()
         NewTakeCoverNode(),
     })
 
+    createSubtree("runAwayFromSnipe", {
+        NewIsEnemySnipingNode(),
+        NewTakeCoverNode(),
+    })
+
     createSubtree("strafe", {
         NewStrafeNode(),
     })
 
     local botTemplates = {
         poggers = {
+            Subtrees.runAwayFromSnipe,
             Subtrees.runAwayFromDamage,
             Subtrees.fireballInRange,
             Subtrees.zapInRange,
@@ -236,6 +242,7 @@ function CreateBrainList()
         },
 
         patient = {
+            Subtrees.runAwayFromSnipe,
             Subtrees.retreatWhenBelowHalf,
             Subtrees.healInCover,
             Subtrees.snipeOnSight,
@@ -252,6 +259,7 @@ function CreateBrainList()
         },
 
         flamethrower = {
+            Subtrees.runAwayFromSnipe,
             Subtrees.runAwayFromDamage,
             Subtrees.fireballInRange,
             Subtrees.healInPlace,
