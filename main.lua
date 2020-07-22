@@ -149,7 +149,7 @@ function love.draw()
 
     -- draw the time remaining in the upper left corner
     love.graphics.setColor(0,0,0)
-    love.graphics.print("Time: " .. math.floor(MatchTimeLimit + 0.5))
+    love.graphics.print("Time: " .. math.floor(MatchTimeLimit + 0.5), 32,32)
 
     if MatchOver then
         local text = "Wizard " .. CurrentlyActiveWizards[WinningWizard].id .. " wins!"
@@ -176,14 +176,13 @@ function love.draw()
     love.graphics.setFont(TreeFont)
     love.graphics.setColor(1, 1, 1)
     verticalTree = nil
-    if CurrentlyActiveWizards[1].brain ~= nil and not ShowBehaviorTree then
+    if CurrentlyActiveWizards[1].brain ~= nil and ShowBehaviorTree then
         love.graphics.print("Wizard " .. CurrentlyActiveWizards[1].id .. createVerticalTree(CurrentlyActiveWizards[1].brain.root), 1350, 500 ,0 , 1)
     end
-    if CurrentlyActiveWizards[2].brain ~= nil and not ShowBehaviorTree then
+    if CurrentlyActiveWizards[2].brain ~= nil and ShowBehaviorTree then
         love.graphics.print("Wizard " .. CurrentlyActiveWizards[2].id .. createVerticalTree(CurrentlyActiveWizards[2].brain.root), 50, 500 ,0 , 1)
     end
-
-
+    love.graphics.setFont(Font)
 end
 
 function createVerticalTree(root, indent, verticalTree) -- wizardNum is one or 2, same as index for CurrentlyActiveWizards
