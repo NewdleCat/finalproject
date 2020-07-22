@@ -214,7 +214,7 @@ function CreateBrainList()
 
     createSubtree("peekAroundCorner", {
         InverterNode(NewLineOfSightNode()),
-        AlwaysFalseNode(NewWalkTowardsEnemyNode()),
+        NewWalkTowardsEnemyNode(),
     })
 
     createSubtree("runAwayFromDamage", {
@@ -261,6 +261,7 @@ function CreateBrainList()
             Subtrees.runAwayFromDamage,
         },
 
+        -- the option for no damage control
         {},
     }
 
@@ -291,6 +292,8 @@ function CreateBrainList()
             Subtrees.snipeToKill,
             Subtrees.zapWithMana,
         },
+
+        -- it may be good to add more attack patterns here
     }
 
     local movement = {
@@ -300,6 +303,7 @@ function CreateBrainList()
         },
 
         {
+            -- need some way to avoid stalemates here
             Subtrees.peekAroundCorner,
         },
 
@@ -311,6 +315,8 @@ function CreateBrainList()
             Subtrees.advanceWhenFar,
             Subtrees.runAwayWhenClose,
         },
+
+        -- research if there are any other good movement patterns
     }
 
     local botTemplates = {

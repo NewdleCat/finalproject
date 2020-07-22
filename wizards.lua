@@ -206,13 +206,13 @@ function NewWizard(x,y, colorScheme)
         -- draw health bar
         local width = 120
         love.graphics.setColor(1,0,0.2)
-        love.graphics.rectangle("fill", self.x -width/2, self.y - 100, width*(self.health/100), 10)
+        love.graphics.rectangle("fill", self.x -width/2, math.max(self.y - 100, Camera.y), width*(self.health/100), 10)
         love.graphics.setColor(0.1,0.1,0.1, 0.5)
-        love.graphics.rectangle("fill", self.x -width/2 + width, self.y - 100, -1*width*(1 - self.health/100), 10)
+        love.graphics.rectangle("fill", self.x -width/2 + width, math.max(self.y - 100, Camera.y), -1*width*(1 - self.health/100), 10)
         love.graphics.setColor(0.2,0,1)
-        love.graphics.rectangle("fill", self.x -width/2, self.y - 100 + 16, width*(self.mana/100), 10)
+        love.graphics.rectangle("fill", self.x -width/2, math.max(self.y - 100, Camera.y) + 16, width*(self.mana/100), 10)
         love.graphics.setColor(0.1,0.1,0.1, 0.5)
-        love.graphics.rectangle("fill", self.x -width/2 + width, self.y - 100 + 16, -1*width*(1 - self.mana/100), 10)
+        love.graphics.rectangle("fill", self.x -width/2 + width, math.max(self.y - 100, Camera.y) + 16, -1*width*(1 - self.mana/100), 10)
     end
 
     self.fireballAttack = function (self)

@@ -11,7 +11,7 @@ function love.load(args)
     UpdateController = 0
     Paused = false
     ShowBehaviorTree = false
-    ShowVerticalTree = false
+    ShowVerticalTree = true
     SimulationMultiplier = 1
     CountdownFont = love.graphics.newFont("comicneue.ttf", 200)
     Font = love.graphics.newFont("comicneue.ttf", 40)
@@ -235,7 +235,7 @@ function love.draw()
     love.graphics.setColor(0.8, 0.8, 0.8)
     verticalTree = nil
     if CurrentlyActiveWizards[1].brain ~= nil and ShowVerticalTree then
-        love.graphics.print("Wizard " .. CurrentlyActiveWizards[1].id .. createVerticalTree(CurrentlyActiveWizards[1].brain.root), 1350, 200 ,0 , 1)
+        love.graphics.print("Wizard " .. CurrentlyActiveWizards[1].id .. createVerticalTree(CurrentlyActiveWizards[1].brain.root), 1300, 200 ,0 , 1)
     end
     if CurrentlyActiveWizards[2].brain ~= nil and ShowVerticalTree then
         love.graphics.print("Wizard " .. CurrentlyActiveWizards[2].id .. createVerticalTree(CurrentlyActiveWizards[2].brain.root), 50, 200 ,0 , 1)
