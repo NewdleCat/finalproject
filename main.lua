@@ -13,6 +13,7 @@ function love.load(args)
     SimulationMultiplier = 1
     PlayerlessSimulationMultiplier = 10
     Font = love.graphics.newFont("comicneue.ttf", 40)
+    TreeFont = love.graphics.newFont("comicneue.ttf", 16)
     love.graphics.setFont(Font)
     DevPlayerEnabled = true
 
@@ -21,6 +22,10 @@ function love.load(args)
     for i,v in pairs(args) do
         if v == "sim" then
             DevPlayerEnabled = false
+        end
+
+        if v == "player" then
+            DevPlayerEnabled = true
         end
 
         if v == "speed" then
@@ -148,6 +153,9 @@ function love.draw()
 
     if MatchOver then
         local text = "Wizard " .. CurrentlyActiveWizards[WinningWizard].id .. " wins!"
+        if WinType == TIMEOUT then
+            text = "Wizard " .. CurrentlyActiveWizards[WinningWizard].id .. " wins by timeout!"
+        end
         local textWidth = Font:getWidth(text)
         love.graphics.print(text, love.graphics.getWidth()/2 - textWidth/2, love.graphics.getHeight()/2 - 150)
     end
@@ -165,6 +173,7 @@ function love.draw()
         love.graphics.pop()
     end
 
+    love.graphics.setFont(TreeFont)
     love.graphics.setColor(1, 1, 1)
     verticalTree = nil
     if CurrentlyActiveWizards[1].brain ~= nil and not ShowBehaviorTree then
