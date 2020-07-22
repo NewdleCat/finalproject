@@ -2,6 +2,7 @@ function NewFireball(x,y, direction)
     local self = {}
     self.x = x
     self.y = y
+    self.realy = y
     self.height = -20
     self.direction = direction
     self.airSpeed = -3
@@ -18,19 +19,19 @@ function NewFireball(x,y, direction)
         local speed = 3
         self.height = self.height + self.airSpeed
         self.x = self.x + math.cos(self.direction)*speed
-        self.y = self.y + math.sin(self.direction)*speed
+        self.realy = self.realy + math.sin(self.direction)*speed
 
-        local tx,ty = WorldToTileCoords(self.x,self.y)
+        local tx,ty = WorldToTileCoords(self.x,self.realy)
         if IsTileWalkable(tx,ty) and GetTile(tx,ty) ~= FIRE_TILE and Distance(tx,ty, self.startX,self.startY) >= 1 then
             SetTile(tx,ty, FIRE_TILE)
         end
 
-        if self.height > 0 and IsInsideArena(self.x,self.y) then
+        if self.height > 0 and IsInsideArena(self.x,self.realy) then
             -- landed inside arena, explode
             love.audio.stop(Sounds.boom)
             love.audio.play(Sounds.boom)
 
-            local tx,ty = WorldToTileCoords(self.x,self.y)
+            local tx,ty = WorldToTileCoords(self.x,self.realy)
             for x=-1, 1 do
                 for y=-1, 1 do
                     if IsTileWalkable(x+tx, y+ty) and GetTile(x+tx,y+ty) ~= FIRE_TILE then
@@ -40,10 +41,12 @@ function NewFireball(x,y, direction)
             end
             return false
         end
-        if not IsInsideArena(self.x,self.y) then
+        if not IsInsideArena(self.x,self.realy) then
             -- landed outside arena, don't explode
             return false
         end
+
+        self.y = self.realy + 64 -- just for layering purposes
 
         return true
     end
@@ -51,12 +54,12 @@ function NewFireball(x,y, direction)
     self.draw = function (self)
         love.graphics.setColor(0.8,0.2,0)
         local radius = 16
-        love.graphics.circle("fill", self.x,self.y + self.height - radius/2, radius)
+        love.graphics.circle("fill", self.x,self.realy + self.height - radius/2, radius)
 
         -- only draw shadow if inside arena
-        if IsInsideArena(self.x,self.y) then
+        if IsInsideArena(self.x,self.realy) then
             love.graphics.setColor(0.2,0.2,0.2, 0.75)
-            DrawOval(self.x,self.y, radius, 0.4)
+            DrawOval(self.x,self.realy, radius, 0.4)
         end
     end
 
