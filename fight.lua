@@ -58,7 +58,7 @@ end
 
 function LoadMatch()
     -- reset arena
-    LoadLevelFromImage("maps/map1.png")
+    LoadLevelFromImage("maps/" .. MapFile .. ".png")
 
     -- add the wizards to the scene
     local match = Bracket[RoundIndex][MatchIndex]
@@ -275,6 +275,10 @@ function DrawMatch()
         thing:draw()
     end
 
+    local function isTileTransparent(x,y)
+        return GetTile(x,y) ~= WALL_TILE
+    end
+
     -- draw the shadows on top of the map and the things
     for x=0, 15 do
         for y=0, 15 do
@@ -282,14 +286,14 @@ function DrawMatch()
             local dx,dy = x*tileSize, y*tileSize
             love.graphics.setColor(0.1,0.1,0.1, 0.5)
             -- bottom right triangle
-            if IsTileWalkable(x,y+1) then
+            if isTileTransparent(x,y+1) then
                 if GetTile(x-1,y+1) == WALL_TILE or GetTile(x,y+1) == WALL_TILE then
                     love.graphics.polygon("fill", dx,dy+tileSize, dx+tileSize,dy+tileSize, dx+tileSize,dy)
                 end
             end
 
-            if (IsTileWalkable(x,y) and IsTileWalkable(x,y+1))
-            or (not IsTileWalkable(x-1,y+1) and not IsTileWalkable(x,y) and IsTileWalkable(x,y+1)) then
+            if (isTileTransparent(x,y) and isTileTransparent(x,y+1))
+            or (not isTileTransparent(x-1,y+1) and not isTileTransparent(x,y) and isTileTransparent(x,y+1)) then
                 -- top left triangle
                 if GetTile(x-1,y) == WALL_TILE or GetTile(x-1, y+1) == WALL_TILE then
                     love.graphics.polygon("fill", dx,dy, dx+tileSize,dy, dx,dy+tileSize)
