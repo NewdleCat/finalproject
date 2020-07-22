@@ -11,7 +11,6 @@ function love.load(args)
     UpdateController = 0
     Paused = false
     ShowBehaviorTree = false
-    ShowVerticalTree = true
     SimulationMultiplier = 1
     CountdownFont = love.graphics.newFont("comicneue.ttf", 200)
     Font = love.graphics.newFont("comicneue.ttf", 40)
@@ -45,6 +44,8 @@ function love.load(args)
             MapFile = args[i+1]
         end
     end
+
+    ShowVerticalTree = not DevPlayerEnabled
 
     -- load sounds that will be used in the game
     Sounds = {
@@ -187,8 +188,16 @@ function love.draw()
 
     -- draw the time remaining in the upper left corner
     love.graphics.setColor(0.8, 0.8, 0.8)
-    love.graphics.print("Round " .. RoundIndex, 32, 32)
-    love.graphics.print("Match " .. MatchIndex, 32, 64+8)
+    if RoundIndex <= ROUND_COUNT-2 then
+        love.graphics.print("Round " .. RoundIndex, 32, 32)
+        love.graphics.print("Match " .. MatchIndex, 32, 64+8)
+    elseif RoundIndex == ROUND_COUNT-1 then
+        love.graphics.print("Semifinals", 32, 32)
+        love.graphics.print("Match " .. MatchIndex, 32, 64+8)
+    else
+        love.graphics.print("Final", 32, 32)
+        --love.graphics.print("Match " .. MatchIndex, 32, 64+8)
+    end
     love.graphics.print("Time: " .. math.floor(MatchTimeLimit + 0.5), 32,96+32)
 
     -- draw countdown text
@@ -245,12 +254,12 @@ function love.draw()
     if CurrentlyActiveWizards[1].brain ~= nil and ShowVerticalTree then
         love.graphics.setColor(0.8, 0.8, 0.8)
         love.graphics.print("Wizard " .. CurrentlyActiveWizards[1].id .. createVerticalTree(CurrentlyActiveWizards[1].brain.root), 1300, 250 ,0 , 1)
-        DrawWizardIcon(CurrentlyActiveWizards[2].id, 1350, 220)
+        DrawWizardIcon(CurrentlyActiveWizards[1].id, 1350, 220)
     end
     if CurrentlyActiveWizards[2].brain ~= nil and ShowVerticalTree then
         love.graphics.setColor(0.8, 0.8, 0.8)
         love.graphics.print("Wizard " .. CurrentlyActiveWizards[2].id .. createVerticalTree(CurrentlyActiveWizards[2].brain.root), 50, 250 ,0 , 1)
-        DrawWizardIcon(CurrentlyActiveWizards[1].id, 100, 220)
+        DrawWizardIcon(CurrentlyActiveWizards[2].id, 100, 220)
     end
     love.graphics.setFont(Font)
 
@@ -468,7 +477,7 @@ function CreateColorList()
         list[i][3][3] = love.math.random()
 
         -- make the player always look the same
-        if i == 1 then
+        if i == 1 and DevPlayerEnabled then
             list[i] = PlayerColors
         end
     end

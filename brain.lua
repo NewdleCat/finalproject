@@ -719,11 +719,12 @@ function PathfindAndGiveDirections(ox,oy, gx,gy, debugPrint)
     local nextNode = nil
     table.insert(frontier, {ox,oy, cost=Distance(ox,oy, gx,gy), parent=nil})
 
-    -- greedy best first
+    -- A*
     while true do
         -- pop off queue
         local this = table.remove(frontier, 1)
 
+        -- if i have run out of things to do, end loop
         if not this then break end
 
         -- if this is the goal, end loop
@@ -732,6 +733,8 @@ function PathfindAndGiveDirections(ox,oy, gx,gy, debugPrint)
             break
         end
 
+        -- define a local function for adding neighbors
+        -- TODO this is very inefficient, might want to abstract this out later if we want to increase performance
         local function addNeighbor(x,y)
             local cost = this.cost + 1
 
@@ -784,5 +787,6 @@ function PathfindAndGiveDirections(ox,oy, gx,gy, debugPrint)
         return nextNode[1]*64 + 32, nextNode[2]*64 + 32
     end
 
+    -- if i didn't find a good route, just return no move
     return 0,0
 end

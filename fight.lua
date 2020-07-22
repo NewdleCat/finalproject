@@ -118,7 +118,9 @@ function LoadMatch()
     TIMEOUT = 2
     WinType = KNOCKOUT
 
-    love.audio.play(Sounds.countdown)
+    if not SkipCountdown then
+        love.audio.play(Sounds.countdown)
+    end
 end
 
 function UpdateMatch()
