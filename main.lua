@@ -187,6 +187,12 @@ function love.draw()
     if CurrentlyActiveWizards[2].brain ~= nil and ShowVerticalTree then
         love.graphics.print("Wizard " .. CurrentlyActiveWizards[2].id .. createVerticalTree(CurrentlyActiveWizards[2].brain.root), 50, 500 ,0 , 1)
     end
+
+    if Paused then
+        love.graphics.print("Paused", love.graphics.getWidth()/2 - TreeFont:getWidth("Paused")/2, love.graphics.getHeight() - 200, 0, 2)
+        love.graphics.print("B - Display Visualized Tree", love.graphics.getWidth()/2 - 10 - TreeFont:getWidth("B - Display Visualized Tree")/2, love.graphics.getHeight() - 150, 0, 2)
+        love.graphics.print("V - Display Vertial Tree", love.graphics.getWidth()/2 - 10 - TreeFont:getWidth("V - Displayer Vertial Tree")/2, love.graphics.getHeight() - 100, 0, 2)
+    end
     love.graphics.setFont(Font)
 end
 

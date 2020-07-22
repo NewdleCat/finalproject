@@ -217,7 +217,7 @@ function DrawBT(rootNode)
         end
     end
 
-    local rootX, rootY = 1300, 1300
+    local rootX, rootY = 1500, 1300
     love.graphics.setColor(1, 1, 1)
 
     count = 0
@@ -271,7 +271,7 @@ function DrawBT(rootNode)
             xList[listIndex] = rootX + (400 * num) + xOffset -- update it with the offset
             addCoords(cn.name, 1, xList[listIndex], coordsIndex) -- addit to the nodeCoords table
 
-            love.graphics.print(cn.name, xList[listIndex], rootY + 1000, 0, 3)
+            love.graphics.print(cn.name, xList[listIndex], rootY + 1000, 0, 1.1)
 
 
             listIndex = listIndex + 1
@@ -280,7 +280,7 @@ function DrawBT(rootNode)
         end
 
         parentX = math.floor((xList[1] + xList[#xList]) / 2)
-        love.graphics.print(n.name, parentX, rootY + 500, 0, 3)
+        love.graphics.print(n.name, parentX, rootY + 500, 0, 1)
 
         for x = 1, #xList do
             love.graphics.line(parentX + #n.name * 12, rootY + 550, xList[x] + #nList[x] * 12, rootY + 1000)
@@ -292,7 +292,7 @@ function DrawBT(rootNode)
     end
 
     rootXPrint = math.floor((pxList[1] + pxList[#pxList]) / 2)
-    love.graphics.print(rootNode.name, rootXPrint, rootY, 0, 3)
+    love.graphics.print(rootNode.name, rootXPrint, rootY, 0, 1)
     for x = 1, #pxList do
         love.graphics.line(rootXPrint + #rootNode.name * 10, rootY + 50, pxList[x] + #pnList[x] * 12, rootY + 500)
     end
