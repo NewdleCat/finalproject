@@ -15,7 +15,7 @@ end
 function CreateBrainList()
     Subtrees = {}
     local function createSubtree(name, nodes)
-        Subtrees[name] = NewSequenceNode()
+        Subtrees[name] = NewSequenceNode(name)
         for i,v in ipairs(nodes) do
             table.insert(Subtrees[name].children, v)
         end
@@ -349,7 +349,7 @@ function DrawBT(rootNode)
         end
     end
 
-    local rootX, rootY = 1300, 1300
+    local rootX, rootY = 1500, 1300
     love.graphics.setColor(1, 1, 1)
 
     count = 0
@@ -392,6 +392,8 @@ function DrawBT(rootNode)
 
                 if string.find(nodeName, "takeCover") then -- for some reason words love to get up close
                     xOffset = xOffset + 150                -- and personal with "takeCover"
+                elseif string.find(nodeName, "walky away from enemy") then
+                    xOffset = xOffset + 200
                 end
 
             end
@@ -401,7 +403,7 @@ function DrawBT(rootNode)
             xList[listIndex] = rootX + (400 * num) + xOffset -- update it with the offset
             addCoords(cn.name, 1, xList[listIndex], coordsIndex) -- addit to the nodeCoords table
 
-            love.graphics.print(cn.name, xList[listIndex], rootY + 1000, 0, 3)
+            love.graphics.print(cn.name, xList[listIndex], rootY + 1000, 0, 1.1)
 
 
             listIndex = listIndex + 1
@@ -410,7 +412,7 @@ function DrawBT(rootNode)
         end
 
         parentX = math.floor((xList[1] + xList[#xList]) / 2)
-        love.graphics.print(n.name, parentX, rootY + 500, 0, 3)
+        love.graphics.print(n.name, parentX, rootY + 500, 0, 1)
 
         for x = 1, #xList do
             love.graphics.line(parentX + #n.name * 12, rootY + 550, xList[x] + #nList[x] * 12, rootY + 1000)
@@ -422,7 +424,7 @@ function DrawBT(rootNode)
     end
 
     rootXPrint = math.floor((pxList[1] + pxList[#pxList]) / 2)
-    love.graphics.print(rootNode.name, rootXPrint, rootY, 0, 3)
+    love.graphics.print(rootNode.name, rootXPrint, rootY, 0, 1)
     for x = 1, #pxList do
         love.graphics.line(rootXPrint + #rootNode.name * 10, rootY + 50, pxList[x] + #pnList[x] * 12, rootY + 500)
     end
@@ -450,7 +452,7 @@ end
 function NewSequenceNode(name)
     local self = {}
     self.children = {}
-    self.name = name or "sequence"
+    self.name = name .. " sequence" or "sequence"
 
     self.query = function (self, owner, enemy)
         -- go through children in order, querying them
@@ -545,7 +547,7 @@ end
 
 function NewIsTakingDamageRightNowNode()
     local self = {}
-    self.name = "isTkingDmg"
+    self.name = "is taking damage"
 
     self.query = function (self, owner, enemy)
         return owner.hurtTimer > 0
@@ -812,7 +814,7 @@ end
 
 function NewWalkAwayFromEnemyNode()
     local self = {}
-    self.name = "walkAway\nFromEnemy"
+    self.name = "walk away from enemy"
 
     self.query = function (self, owner, enemy)
         local angle = GetAngle(owner.x,owner.y, enemy.x,enemy.y)
@@ -960,7 +962,7 @@ end
 
 function InverterNode(node)
     local self = {}
-    self.name = "inverted " .. node.name
+    self.name = "inverted (" .. node.name .. ")"
     self.child = node
 
     self.query = function (self, owner, enemy)

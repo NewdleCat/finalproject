@@ -10,17 +10,31 @@ function love.load(args)
     UpdateController = 0
     Paused = false
     ShowBehaviorTree = false
+    ShowVerticalTree = false
     SimulationMultiplier = 1
-    PlayerlessSimulationMultiplier = 1
-
+    PlayerlessSimulationMultiplier = 10
+    Font = love.graphics.newFont("comicneue.ttf", 40)
+    TreeFont = love.graphics.newFont("comicneue.ttf", 16)
+    love.graphics.setFont(Font)
+    DevPlayerEnabled = true
+    
     -- if you give the program "player" as a command line argument, you can be a participant in the tournament
+    love.audio.setVolume(0.2)
     for i,v in pairs(args) do
+        if v == "sim" then
+            DevPlayerEnabled = false
+        end
+
         if v == "player" then
             DevPlayerEnabled = true
         end
 
         if v == "speed" then
             PlayerlessSimulationMultiplier = args[i+1]
+        end
+
+        if v == "volume" then
+            love.audio.setVolume(args[i+1])
         end
     end
 
@@ -42,7 +56,6 @@ function love.load(args)
 
         ocean = love.audio.newSource("sounds/ocean2.mp3", "stream"),
     }
-    love.audio.setVolume(0.2)
     Sounds.ocean:setLooping(true)
     Sounds.ocean:setVolume(0.5)
     Sounds.ocean:play()
@@ -125,6 +138,10 @@ function love.keypressed(key)
     if key == "b" then
         ShowBehaviorTree = not ShowBehaviorTree
     end
+
+    if key == "v" then
+        ShowVerticalTree = not ShowVerticalTree
+    end
 end
 
 function love.wheelmoved(x,y)
@@ -136,9 +153,27 @@ function love.draw()
     DrawMatch()
 
     -- draw the time remaining in the upper left corner
-    love.graphics.setColor(0,0,0)
-    love.graphics.print("Time: " .. math.floor(MatchTimeLimit + 0.5))
+    love.graphics.setColor(0.8, 0.8, 0.8)
+    love.graphics.print("Time: " .. math.floor(MatchTimeLimit + 0.5), 32,32)
 
+    if SimulationMultiplier > 1 then
+        local cx,cy = 100, love.graphics.getHeight() - 100
+        local sep = 25
+        love.graphics.circle("fill", cx-sep,cy, 80,3)
+        love.graphics.circle("fill", cx+sep,cy, 80,3)
+    end
+
+    -- draw win text when match is over
+    if MatchOver then
+        local text = "Wizard " .. CurrentlyActiveWizards[WinningWizard].id .. " wins!"
+        if WinType == TIMEOUT then
+            text = "Wizard " .. CurrentlyActiveWizards[WinningWizard].id .. " wins by timeout!"
+        end
+        local textWidth = Font:getWidth(text)
+        love.graphics.print(text, love.graphics.getWidth()/2 - textWidth/2, love.graphics.getHeight()/2 - 150)
+    end
+
+    -- draw the bracket after the match is over for a little while
     if MatchWinTime < 3 then
         DrawBracket()
     end
@@ -151,6 +186,40 @@ function love.draw()
         DrawBT(VisualizedTree)
         love.graphics.pop()
     end
+
+    -- draw the vertical behavior trees if enabled
+    love.graphics.setFont(TreeFont)
+    love.graphics.setColor(0.8, 0.8, 0.8)
+    verticalTree = nil
+    if CurrentlyActiveWizards[1].brain ~= nil and ShowVerticalTree then
+        love.graphics.print("Wizard " .. CurrentlyActiveWizards[1].id .. createVerticalTree(CurrentlyActiveWizards[1].brain.root), 1350, 500 ,0 , 1)
+    end
+    if CurrentlyActiveWizards[2].brain ~= nil and ShowVerticalTree then
+        love.graphics.print("Wizard " .. CurrentlyActiveWizards[2].id .. createVerticalTree(CurrentlyActiveWizards[2].brain.root), 50, 500 ,0 , 1)
+    end
+    love.graphics.setFont(Font)
+
+    -- draw pause screen
+    if Paused then
+        love.graphics.print("Paused", love.graphics.getWidth()/2 - Font:getWidth("Paused")/2, love.graphics.getHeight()/2 - 200)
+        love.graphics.print("B - Display Visualized Tree", love.graphics.getWidth()/2 - 10 - Font:getWidth("B - Display Visualized Tree")/2, love.graphics.getHeight()/2 + 150)
+        love.graphics.print("V - Display Vertial Tree", love.graphics.getWidth()/2 - 10 - Font:getWidth("V - Displayer Vertial Tree")/2, love.graphics.getHeight()/2 + 100)
+    end
+end
+
+function createVerticalTree(root, indent, verticalTree) -- wizardNum is one or 2, same as index for CurrentlyActiveWizards
+    if not indent then indent = "" end
+    if not verticalTree then verticalTree = "" end
+
+    verticalTree = verticalTree .. "\n".. indent .. root.name
+
+    if root.children then
+        for i,v in pairs(root.children) do
+            verticalTree = createVerticalTree(v, indent .. "|  ", verticalTree)
+        end
+    end
+
+    return verticalTree
 end
 
 wizardCoords = {}
@@ -226,10 +295,6 @@ function DrawBracket()
                     local lastMatch = Bracket[r - 1][i]
 
                     love.graphics.setColor(1,1,1)
-
-                    if wizard == 2 then
-                        print(lastMatch[1], lastMatch[2])
-                    end
 
                     x1, y1 = getWizardCoords(lastMatch[1], r - 1)
                     x2, y2 = getWizardCoords(lastMatch[2], r - 1)
