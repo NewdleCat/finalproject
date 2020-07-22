@@ -65,9 +65,7 @@ function NewLineOfSightNode()
     self.name = "check line of sight"
 
     self.query = function (self, owner, enemy)
-        local ox,oy = WorldToTileCoords(owner.x,owner.y)
-        local gx,gy = WorldToTileCoords(enemy.x,enemy.y)
-        return CheckLineOfSight(ox,oy, gx,gy)
+        return CheckLineOfSight(owner.x,owner.y, enemy.x,enemy.y)
     end
 
     return self
@@ -117,7 +115,7 @@ function NewTakeCoverNode(showDebug)
         local pick = {}
         for y=0, 15 do
             for x=0, 15 do
-                if not CheckLineOfSight(x,y, gx,gy) and GetTile(x,y) == FLOOR_TILE then
+                if not CheckLineOfSight(x*64 + 32,y*64 + 32, enemy.x,enemy.y) and GetTile(x,y) == FLOOR_TILE then
                     sight[x][y] = true
                     local thisCost = Distance(x,y, ox,oy) - Distance(x,y, gx,gy)
                     if not goalCost or thisCost < goalCost then

@@ -218,6 +218,11 @@ function CreateBrainList()
     })
 
     local botTemplates = {
+        test = {
+            Subtrees.snipeOnSight,
+            Subtrees.advance,
+        },
+    }
         --[[
         ]]
 
@@ -241,6 +246,7 @@ function CreateBrainList()
     }
     ]]
 
+        --[[
         fireballCamper = {
             Subtrees.healInCover,
             Subtrees.fireball,
@@ -281,6 +287,7 @@ function CreateBrainList()
             Subtrees.retreat,
         },
     }
+    ]]
 
     local list = {}
     for i=1, CONTESTANT_COUNT do
@@ -502,14 +509,16 @@ end
 
 function CheckLineOfSight(ox,oy, gx,gy)
     local angle = GetAngle(ox,oy, gx,gy)
-    local x,y = ox + 0.5,oy + 0.5
+    local x,y = ox,oy
 
-    while IsTileWalkable(math.floor(x),math.floor(y)) do
-        if math.floor(x) == gx and math.floor(y) == gy then
+    while IsTileWalkable(WorldToTileCoords(x,y)) do
+        local tx1,ty1 = WorldToTileCoords(x,y)
+        local tx2,ty2 = WorldToTileCoords(gx,gy)
+        if tx1 == tx2 and ty1 == ty2 then
             return true
         end
 
-        x,y = x + math.cos(angle)*0.1, y + math.sin(angle)*0.1
+        x,y = x + math.cos(angle), y + math.sin(angle)
     end
 
     return false
@@ -553,6 +562,8 @@ function PathfindAndGiveDirections(ox,oy, gx,gy, debugPrint)
             PrintMap(checked)
         end
 
+        if not this then break end
+
         -- if this is the goal, end loop
         if this[1] == gx and this[2] == gy then
             nextNode = this
@@ -560,14 +571,14 @@ function PathfindAndGiveDirections(ox,oy, gx,gy, debugPrint)
         end
 
         local function addNeighbor(x,y)
-            local cost = Distance(this[1]+x, this[2]+y, gx,gy) + this.cost
+            local cost = 1 + this.cost
 
             -- make fire tiles cost more
             if GetTile(this[1]+x,this[2]+y) == FIRE_TILE then cost = cost + 2 end
 
             -- if this tile is walkable and either i havn't been here or this route is cheaper
             if IsTileWalkable(this[1]+x, this[2]+y) and (not checked[this[1]+x][this[2]+y] or cost < checked[this[1]+x][this[2]+y].cost) then
-                local next = {this[1]+x, this[2]+y, cost=cost, parent=this}
+                local next = {this[1]+x, this[2]+y, cost=cost, priority=cost+Distance(this[1]+x,this[2]+y, gx,gy), parent=this}
                 table.insert(frontier, next)
                 checked[this[1]+x][this[2]+y] = next
             end
@@ -584,7 +595,7 @@ function PathfindAndGiveDirections(ox,oy, gx,gy, debugPrint)
 
         -- sort queue by distance to goal
         table.sort(frontier, function (a,b)
-            return a.cost < b.cost
+            return a.priority < b.priority
         end)
     end
 
