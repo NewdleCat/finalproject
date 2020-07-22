@@ -230,10 +230,10 @@ function love.draw()
     love.graphics.setColor(0.8, 0.8, 0.8)
     verticalTree = nil
     if CurrentlyActiveWizards[1].brain ~= nil and ShowVerticalTree then
-        love.graphics.print("Wizard " .. CurrentlyActiveWizards[1].id .. createVerticalTree(CurrentlyActiveWizards[1].brain.root), 1350, 500 ,0 , 1)
+        love.graphics.print("Wizard " .. CurrentlyActiveWizards[1].id .. createVerticalTree(CurrentlyActiveWizards[1].brain.root), 1350, 200 ,0 , 1)
     end
     if CurrentlyActiveWizards[2].brain ~= nil and ShowVerticalTree then
-        love.graphics.print("Wizard " .. CurrentlyActiveWizards[2].id .. createVerticalTree(CurrentlyActiveWizards[2].brain.root), 50, 500 ,0 , 1)
+        love.graphics.print("Wizard " .. CurrentlyActiveWizards[2].id .. createVerticalTree(CurrentlyActiveWizards[2].brain.root), 50, 200 ,0 , 1)
     end
     love.graphics.setFont(Font)
 

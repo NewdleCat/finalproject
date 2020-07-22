@@ -15,6 +15,7 @@ function NewWizard(x,y, colorScheme)
     self.living = true
     self.moveVector = {0,0}
     self.hurtTimer = 0
+    self.healTimer = 0
 
     self.colorScheme = colorScheme
 
@@ -94,6 +95,16 @@ function NewWizard(x,y, colorScheme)
             self.xSpeed = self.xSpeed + math.cos(moveAngle)*walkSpeed
             self.ySpeed = self.ySpeed + math.sin(moveAngle)*walkSpeed
         end
+
+        -- heal spell buff timer
+        if self.healTimer > 0 then
+            self.health = math.min(self.health + 0.2, 100)
+
+            if love.math.random() < 0.2 then
+                AddToThingList(NewHealParticle(self.x + love.math.random()*10 -5,self.y + love.math.random()*10 -5))
+            end
+        end
+        self.healTimer = math.max(self.healTimer - dt, 0)
 
         -- apply some friction to be able to stop walking
         local friction = 0.8
@@ -216,8 +227,9 @@ function NewWizard(x,y, colorScheme)
     self.healSpell = function (self)
         if self.mana >= 50 then
             self.mana = self.mana - 50
-            local x,y = WorldToTileCoords(self.x,self.y)
-            SetTile(x,y, HEAL_TILE)
+            --local x,y = WorldToTileCoords(self.x,self.y)
+            --SetTile(x,y, HEAL_TILE)
+            self.healTimer = 4
         end
     end
 

@@ -7,6 +7,8 @@ function NewFireball(x,y, direction)
     self.airSpeed = -3
     self.name = "fireball"
 
+    self.startX, self.startY = WorldToTileCoords(x,y)
+
     love.audio.stop(Sounds.fireball)
     love.audio.play(Sounds.fireball)
 
@@ -18,6 +20,11 @@ function NewFireball(x,y, direction)
         self.x = self.x + math.cos(self.direction)*speed
         self.y = self.y + math.sin(self.direction)*speed
 
+        local tx,ty = WorldToTileCoords(self.x,self.y)
+        if IsTileWalkable(tx,ty) and GetTile(tx,ty) ~= FIRE_TILE and (tx ~= self.startX or ty ~= self.startY) then
+            SetTile(tx,ty, FIRE_TILE)
+        end
+
         if self.height > 0 and IsInsideArena(self.x,self.y) then
             -- landed inside arena, explode
             love.audio.stop(Sounds.boom)
@@ -26,7 +33,7 @@ function NewFireball(x,y, direction)
             local tx,ty = WorldToTileCoords(self.x,self.y)
             for x=-1, 1 do
                 for y=-1, 1 do
-                    if IsTileWalkable(x+tx, y+ty) then
+                    if IsTileWalkable(x+tx, y+ty) and GetTile(x+tx,y+ty) ~= FIRE_TILE then
                         SetTile(x+tx, y+ty, FIRE_TILE)
                     end
                 end
@@ -155,7 +162,7 @@ function NewFireTileVisual(x,y)
 
     -- add three circles in random places
     for i=1, 3 do
-        table.insert(self.points, {love.math.random()*48 + 8, love.math.random()*48 + 8, radius = love.math.random()*16 + 8, color = love.math.random()*0.5 + 0.5})
+        table.insert(self.points, {love.math.random()*48 + 8, love.math.random()*48 + 8, radius = love.math.random()*16 + 8, color = love.math.random()*0.8 + 0.1})
     end
 
     self.update = function (self, dt)
@@ -179,7 +186,7 @@ function NewFireTileVisual(x,y)
         love.graphics.setStencilTest("greater", 0)
         -- draw my three red circles
         for i,point in pairs(self.points) do
-            love.graphics.setColor(0.8*point.color,0.2*point.color,0, Conversion(1,0, 9,10, self.timer))
+            love.graphics.setColor(0.8*point.color,0.05*point.color,0, Conversion(1,0, 9,10, self.timer))
             love.graphics.circle("fill", self.x*64 + point[1],self.y*64 + point[2], point.radius)
         end
         love.graphics.setStencilTest()
@@ -205,7 +212,7 @@ function NewEmberParticle(x,y)
     end
 
     self.draw = function (self)
-        love.graphics.setColor(0.8*self.color,0.2*self.color,0, Conversion(1,0, self.timerMax-0.15,self.timerMax, self.timer))
+        love.graphics.setColor(0.8*self.color,0.05*self.color,0, Conversion(1,0, self.timerMax-0.15,self.timerMax, self.timer))
         love.graphics.circle("fill", self.x,self.y, 10,4)
     end
 
@@ -302,7 +309,7 @@ function NewHealParticle(x,y)
 
     self.update = function (self, dt)
         self.timer = self.timer + dt
-        self.y = self.y - 1
+        self.y = self.y - 2
         self.x = self.x + math.sin(self.timer*3)*2
 
         return self.timer < self.timerMax
@@ -310,7 +317,7 @@ function NewHealParticle(x,y)
 
     self.draw = function (self)
         love.graphics.setColor(0.2*self.color,0.8*self.color,0, Conversion(1,0, self.timerMax-0.15,self.timerMax, self.timer))
-        love.graphics.circle("fill", self.x,self.y, 10,4)
+        love.graphics.circle("line", self.x,self.y, 10,8)
     end
 
     return self
