@@ -260,6 +260,8 @@ function DrawBT(rootNode)
 
                 if string.find(nodeName, "takeCover") then -- for some reason words love to get up close
                     xOffset = xOffset + 150                -- and personal with "takeCover"
+                elseif string.find(nodeName, "walky away from enemy") then 
+                    xOffset = xOffset + 150                
                 end
 
             end
