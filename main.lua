@@ -11,7 +11,6 @@ function love.load(args)
     UpdateController = 0
     Paused = false
     ShowBehaviorTree = false
-    ShowVerticalTree = true
     SimulationMultiplier = 1
     CountdownFont = love.graphics.newFont("comicneue.ttf", 200)
     Font = love.graphics.newFont("comicneue.ttf", 40)
@@ -20,6 +19,7 @@ function love.load(args)
     DevPlayerEnabled = true
     Fastforward = 1
     FastforwardMax = 9
+    MapFile = "map1"
 
     -- if you give the program "player" as a command line argument, you can be a participant in the tournament
     love.audio.setVolume(0.2)
@@ -39,7 +39,13 @@ function love.load(args)
         if v == "skip" then
             SkipCountdown = true
         end
+
+        if v == "map" then
+            MapFile = args[i+1]
+        end
     end
+
+    ShowVerticalTree = not DevPlayerEnabled
 
     -- load sounds that will be used in the game
     Sounds = {
@@ -182,7 +188,17 @@ function love.draw()
 
     -- draw the time remaining in the upper left corner
     love.graphics.setColor(0.8, 0.8, 0.8)
-    love.graphics.print("Time: " .. math.floor(MatchTimeLimit + 0.5), 32,32)
+    if RoundIndex <= ROUND_COUNT-2 then
+        love.graphics.print("Round " .. RoundIndex, 32, 32)
+        love.graphics.print("Match " .. MatchIndex, 32, 64+8)
+    elseif RoundIndex == ROUND_COUNT-1 then
+        love.graphics.print("Semifinals", 32, 32)
+        love.graphics.print("Match " .. MatchIndex, 32, 64+8)
+    else
+        love.graphics.print("Final", 32, 32)
+        --love.graphics.print("Match " .. MatchIndex, 32, 64+8)
+    end
+    love.graphics.print("Time: " .. math.floor(MatchTimeLimit + 0.5), 32,96+32)
 
     -- draw countdown text
     local text = "" .. math.ceil(MatchStartTime -1)
@@ -236,15 +252,20 @@ function love.draw()
     love.graphics.setColor(0.8, 0.8, 0.8)
     verticalTree = nil
     if CurrentlyActiveWizards[1].brain ~= nil and ShowVerticalTree then
-        love.graphics.print("Wizard " .. CurrentlyActiveWizards[1].id .. createVerticalTree(CurrentlyActiveWizards[1].brain.root), 1300, 200 ,0 , 1)
+        love.graphics.setColor(0.8, 0.8, 0.8)
+        love.graphics.print("Wizard " .. CurrentlyActiveWizards[1].id .. createVerticalTree(CurrentlyActiveWizards[1].brain.root), 1300, 250 ,0 , 1)
+        DrawWizardIcon(CurrentlyActiveWizards[1].id, 1350, 220)
     end
     if CurrentlyActiveWizards[2].brain ~= nil and ShowVerticalTree then
-        love.graphics.print("Wizard " .. CurrentlyActiveWizards[2].id .. createVerticalTree(CurrentlyActiveWizards[2].brain.root), 50, 200 ,0 , 1)
+        love.graphics.setColor(0.8, 0.8, 0.8)
+        love.graphics.print("Wizard " .. CurrentlyActiveWizards[2].id .. createVerticalTree(CurrentlyActiveWizards[2].brain.root), 50, 250 ,0 , 1)
+        DrawWizardIcon(CurrentlyActiveWizards[2].id, 100, 220)
     end
     love.graphics.setFont(Font)
 
     -- draw pause screen
     if Paused then
+        love.graphics.setColor(0.8, 0.8, 0.8)
         love.graphics.print("Paused", love.graphics.getWidth()/2 - Font:getWidth("Paused")/2, love.graphics.getHeight()/2 - 200)
 
         local tips = {
@@ -275,21 +296,22 @@ function createVerticalTree(root, indent, verticalTree) -- wizardNum is one or 2
     return verticalTree
 end
 
+function DrawWizardIcon(wizardID, centerx,centery)
+    local colorScheme = ColorList[wizardID]
+    love.graphics.setColor(unpack(colorScheme[3]))
+    love.graphics.circle("fill", centerx,centery, 12)
+    love.graphics.setColor(unpack(colorScheme[2]))
+    DrawOval(centerx,centery-10, 28, 0.4)
+    local hatwidth = 11
+    local hatheight = 40
+    love.graphics.setColor(unpack(colorScheme[1]))
+    love.graphics.polygon("fill", centerx-hatwidth,centery-10, centerx+hatwidth,centery-10, centerx,centery-hatheight)
+    DrawOval(centerx,centery-10, hatwidth, 0.4)
+end
+
+
 wizardCoords = {}
 function DrawBracket()
-    local function drawWizardIcon(wizardID, centerx,centery)
-        local colorScheme = ColorList[wizardID]
-        love.graphics.setColor(unpack(colorScheme[3]))
-        love.graphics.circle("fill", centerx,centery, 12)
-        love.graphics.setColor(unpack(colorScheme[2]))
-        DrawOval(centerx,centery-10, 28, 0.4)
-        local hatwidth = 11
-        local hatheight = 40
-        love.graphics.setColor(unpack(colorScheme[1]))
-        love.graphics.polygon("fill", centerx-hatwidth,centery-10, centerx+hatwidth,centery-10, centerx,centery-hatheight)
-        DrawOval(centerx,centery-10, hatwidth, 0.4)
-    end
-
     local function addWizardCoords(wizard, round, x, y)
         w = {}
         w.wizardID = wizard
@@ -375,7 +397,7 @@ function DrawBracket()
                 end
 
                 if wizard then
-                    drawWizardIcon(wizard, x,y)
+                    DrawWizardIcon(wizard, x,y)
                 end
             end
         end
@@ -455,7 +477,7 @@ function CreateColorList()
         list[i][3][3] = love.math.random()
 
         -- make the player always look the same
-        if i == 1 then
+        if i == 1 and DevPlayerEnabled then
             list[i] = PlayerColors
         end
     end
