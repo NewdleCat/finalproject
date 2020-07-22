@@ -95,7 +95,7 @@ function love.load(args)
         }
     ]]
 
-    ROUND_COUNT = 4 -- 2^4 = 16 contestants
+    ROUND_COUNT = 2 -- 2^4 = 16 contestants
     CONTESTANT_COUNT = 2^ROUND_COUNT
     InitializeTournament()
 end
@@ -348,11 +348,11 @@ function DrawBracket()
     local lightLine = {0.8,0.8,0.8}
 
     local xvalues = {}
-    for r=1, ROUND_COUNT do
+    for r=1, ROUND_COUNT + 1 do
         local count = GetContestantsAtLayer(r)
         for i=1, count do
             local x = Conversion(0.1,0.9, 1,count, i)*love.graphics.getWidth()
-            local y = Conversion(0.8,0.2, 1,ROUND_COUNT, r)*love.graphics.getHeight()
+            local y = Conversion(0.8,0.2, 1,ROUND_COUNT + 1, r)*love.graphics.getHeight()
 
             if r == 1 then
                 xvalues[i] = x
