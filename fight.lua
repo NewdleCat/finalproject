@@ -66,7 +66,7 @@ function LoadMatch()
     local wizard2 = match[2]
     local x1,y1 = 64*14.5, 64*14.5
     local x2,y2 = 64*1.5, 64*1.5
-    local containsPlayer = false
+    ContainsPlayer = false
 
     if BrainList[wizard1] then
         local bot = AddToThingList(NewBot(x1,y1, ColorList[wizard1]))
@@ -78,7 +78,7 @@ function LoadMatch()
         ThePlayer = AddToThingList(NewPlayer(x1,y1, ColorList[wizard1]))
         ThePlayer.brainIndex = wizard1
         wizard1 = ThePlayer
-        containsPlayer = true
+        ContainsPlayer = true
     end
 
     if BrainList[wizard2] then
@@ -91,14 +91,7 @@ function LoadMatch()
         ThePlayer = AddToThingList(NewPlayer(x2,y2, ColorList[wizard2]))
         ThePlayer.brainIndex = wizard2
         wizard2 = ThePlayer
-        containsPlayer = true
-    end
-
-    -- fast forward matches where the player is not involved
-    if containsPlayer then
-        SimulationMultiplier = 1
-    else
-        SimulationMultiplier = PlayerlessSimulationMultiplier
+        ContainsPlayer = true
     end
 
     -- make the wizards enemies

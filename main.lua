@@ -12,12 +12,13 @@ function love.load(args)
     ShowBehaviorTree = false
     ShowVerticalTree = false
     SimulationMultiplier = 1
-    PlayerlessSimulationMultiplier = 10
     CountdownFont = love.graphics.newFont("comicneue.ttf", 200)
     Font = love.graphics.newFont("comicneue.ttf", 40)
     TreeFont = love.graphics.newFont("comicneue.ttf", 16)
     love.graphics.setFont(Font)
     DevPlayerEnabled = true
+    Fastforward = 0
+    FastforwardMax = 9
 
     -- if you give the program "player" as a command line argument, you can be a participant in the tournament
     love.audio.setVolume(0.2)
@@ -28,10 +29,6 @@ function love.load(args)
 
         if v == "player" then
             DevPlayerEnabled = true
-        end
-
-        if v == "speed" then
-            PlayerlessSimulationMultiplier = args[i+1]
         end
 
         if v == "volume" then
@@ -100,6 +97,13 @@ function love.update(dt)
     -- if the game is paused, just don't update anything
     if Paused then return end
 
+    -- fast forward matches where the player is not involved
+    if not ContainsPlayer then
+        SimulationMultiplier = math.max(Conversion(0,32, 1,FastforwardMax, Fastforward), 1)
+    else
+        SimulationMultiplier = 1
+    end
+
     -- control the update cycle to always run at 60 times per second
     -- we could deltatime every physical interaction in the game, but eh fuck it
     -- this also guarantees that the AI always has the same simulation time between evaluations
@@ -145,6 +149,20 @@ function love.keypressed(key)
     if key == "v" then
         ShowVerticalTree = not ShowVerticalTree
     end
+
+    if key == "f" then
+        if not love.keyboard.isDown("lshift") then
+            Fastforward = Fastforward + 1
+            if Fastforward > FastforwardMax then
+                Fastforward = 1
+            end
+        else
+            Fastforward = Fastforward - 1
+            if Fastforward < 1 then
+                Fastforward = FastforwardMax
+            end
+        end
+    end
 end
 
 function love.wheelmoved(x,y)
@@ -177,6 +195,7 @@ function love.draw()
         local sep = 25
         love.graphics.circle("fill", cx-sep,cy, 80,3)
         love.graphics.circle("fill", cx+sep,cy, 80,3)
+        love.graphics.print("x" .. math.floor(SimulationMultiplier + 0.5), cx,cy + 100)
     end
 
     -- draw win text when match is over
@@ -218,8 +237,17 @@ function love.draw()
     -- draw pause screen
     if Paused then
         love.graphics.print("Paused", love.graphics.getWidth()/2 - Font:getWidth("Paused")/2, love.graphics.getHeight()/2 - 200)
-        love.graphics.print("B - Display Visualized Tree", love.graphics.getWidth()/2 - 10 - Font:getWidth("B - Display Visualized Tree")/2, love.graphics.getHeight()/2 + 150)
-        love.graphics.print("V - Display Vertial Tree", love.graphics.getWidth()/2 - 10 - Font:getWidth("V - Displayer Vertial Tree")/2, love.graphics.getHeight()/2 + 100)
+
+        local tips = {
+            "B - Display visualized tree",
+            "V - Display vertial tree",
+            "F - Increase simulation speed",
+            "Shift-F - Decrease simulation speed",
+        }
+
+        for i,v in pairs(tips) do
+            love.graphics.print(v, love.graphics.getWidth()/2 - Font:getWidth(v)/2, love.graphics.getHeight()/2 + 50 + (i-1)*64)
+        end
     end
 end
 
@@ -367,35 +395,40 @@ end
 
 function GenerateColorscheme()
     drips = {
+        -- original
         {
             {63/255, 63/255, 76/255},
             {102/255, 102/255, 107/255},
-            {1/4, 1/2, 1},
         },
+
+        -- pink
         {
             {215/255, 139/255, 156/255},
             {255/255, 179/255, 186/255},
-            {1/4, 1/2, 1},
         },
+
+        -- lighter pink
         {
             {215/255, 183/255, 156/255},
             {255/255, 223/255, 186/255},
-            {1/4, 1/2, 1},
         },
+
+        -- yellow
         {
             {215/255, 215/255, 156/255},
             {255/255, 255/255, 186/255},
-            {1/4, 1/2, 1},
         },
+
+        -- green
         {
             {156/255, 215/255, 161/255},
             {186/255, 255/255, 201/255},
-            {1/4, 1/2, 1},
         },
+
+        -- turqouise
         {
             {156/255, 215/255, 215/255},
             {186/255, 255/255, 255/255},
-            {1/4, 1/2, 1},
         },
     }
 
@@ -407,6 +440,7 @@ function CreateColorList()
 
     for i=1, CONTESTANT_COUNT do
         list[i] = GenerateColorscheme()
+        if not list[i][3] then list[i][3] = {} end
         list[i][3][1] = love.math.random()
         list[i][3][2] = love.math.random()
         list[i][3][3] = love.math.random()
