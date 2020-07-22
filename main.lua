@@ -23,6 +23,10 @@ function love.load(args)
             DevPlayerEnabled = false
         end
 
+        if v == "player" then
+            DevPlayerEnabled = true
+        end
+
         if v == "speed" then
             PlayerlessSimulationMultiplier = args[i+1]
         end
@@ -148,6 +152,9 @@ function love.draw()
 
     if MatchOver then
         local text = "Wizard " .. CurrentlyActiveWizards[WinningWizard].id .. " wins!"
+        if WinType == TIMEOUT then
+            text = "Wizard " .. CurrentlyActiveWizards[WinningWizard].id .. " wins by timeout!"
+        end
         local textWidth = Font:getWidth(text)
         love.graphics.print(text, love.graphics.getWidth()/2 - textWidth/2, love.graphics.getHeight()/2 - 150)
     end
