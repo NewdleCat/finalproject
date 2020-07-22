@@ -153,9 +153,17 @@ function love.draw()
     DrawMatch()
 
     -- draw the time remaining in the upper left corner
-    love.graphics.setColor(0,0,0)
+    love.graphics.setColor(1, 1, 1)
     love.graphics.print("Time: " .. math.floor(MatchTimeLimit + 0.5), 32,32)
 
+    if SimulationMultiplier > 1 then
+        local cx,cy = 100, love.graphics.getHeight() - 100
+        local sep = 25
+        love.graphics.circle("fill", cx-sep,cy, 80,3)
+        love.graphics.circle("fill", cx+sep,cy, 80,3)
+    end
+
+    -- draw win text when match is over
     if MatchOver then
         local text = "Wizard " .. CurrentlyActiveWizards[WinningWizard].id .. " wins!"
         if WinType == TIMEOUT then
@@ -165,6 +173,7 @@ function love.draw()
         love.graphics.print(text, love.graphics.getWidth()/2 - textWidth/2, love.graphics.getHeight()/2 - 150)
     end
 
+    -- draw the bracket after the match is over for a little while
     if MatchWinTime < 3 then
         DrawBracket()
     end
@@ -178,6 +187,7 @@ function love.draw()
         love.graphics.pop()
     end
 
+    -- draw the vertical behavior trees if enabled
     love.graphics.setFont(TreeFont)
     love.graphics.setColor(1, 1, 1)
     verticalTree = nil
@@ -187,13 +197,14 @@ function love.draw()
     if CurrentlyActiveWizards[2].brain ~= nil and ShowVerticalTree then
         love.graphics.print("Wizard " .. CurrentlyActiveWizards[2].id .. createVerticalTree(CurrentlyActiveWizards[2].brain.root), 50, 500 ,0 , 1)
     end
-
-    if Paused then
-        love.graphics.print("Paused", love.graphics.getWidth()/2 - TreeFont:getWidth("Paused")/2, love.graphics.getHeight() - 200, 0, 2)
-        love.graphics.print("B - Display Visualized Tree", love.graphics.getWidth()/2 - 10 - TreeFont:getWidth("B - Display Visualized Tree")/2, love.graphics.getHeight() - 150, 0, 2)
-        love.graphics.print("V - Display Vertial Tree", love.graphics.getWidth()/2 - 10 - TreeFont:getWidth("V - Displayer Vertial Tree")/2, love.graphics.getHeight() - 100, 0, 2)
-    end
     love.graphics.setFont(Font)
+
+    -- draw pause screen
+    if Paused then
+        love.graphics.print("Paused", love.graphics.getWidth()/2 - Font:getWidth("Paused")/2, love.graphics.getHeight()/2 - 200)
+        love.graphics.print("B - Display Visualized Tree", love.graphics.getWidth()/2 - 10 - Font:getWidth("B - Display Visualized Tree")/2, love.graphics.getHeight()/2 + 150)
+        love.graphics.print("V - Display Vertial Tree", love.graphics.getWidth()/2 - 10 - Font:getWidth("V - Displayer Vertial Tree")/2, love.graphics.getHeight()/2 + 100)
+    end
 end
 
 function createVerticalTree(root, indent, verticalTree) -- wizardNum is one or 2, same as index for CurrentlyActiveWizards
