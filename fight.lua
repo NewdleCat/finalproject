@@ -107,6 +107,9 @@ function LoadMatch()
     -- set a time limit for the match and how long the victory animation should be
     MatchTimeLimit = 60
     MatchStartTime = 4
+    if SkipCountdown then
+        MatchStartTime = 1
+    end
     MatchWinTime = 5
     WinningWizard = nil
     MatchOver = false
@@ -189,13 +192,22 @@ function UpdateMatch()
             Camera.y = Lerp(Camera.y, CurrentlyActiveWizards[WinningWizard].y - love.graphics.getHeight()*Camera.zoom/2, 0.075)
         end
 
-        -- if the match goes on for too long, kill a random wizard
+        -- if the match goes on for too long, kill wizard with least health
         if not MatchOver then
             MatchTimeLimit = math.max(MatchTimeLimit - 1/60, 0)
         end
         if MatchTimeLimit <= 0 and not MatchOver then
             WinType = TIMEOUT
-            CurrentlyActiveWizards[Choose{1,2}].dead = true
+
+            -- kill the one with the least amount of health
+            if CurrentlyActiveWizards[1].health > CurrentlyActiveWizards[2].health then
+                CurrentlyActiveWizards[2].dead = true
+            elseif CurrentlyActiveWizards[2].health > CurrentlyActiveWizards[1].health then
+                CurrentlyActiveWizards[1].dead = true
+            else
+                -- if they have the same health, just kill one randomly
+                CurrentlyActiveWizards[Choose{1,2}].dead = true
+            end
         end
 
         if MatchWinTime <= 0 then

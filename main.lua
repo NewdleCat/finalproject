@@ -2,6 +2,7 @@ require "level"
 require "fight"
 require "things"
 require "wizards"
+require "nodes"
 require "brain"
 
 function love.load(args)
@@ -17,7 +18,7 @@ function love.load(args)
     TreeFont = love.graphics.newFont("comicneue.ttf", 16)
     love.graphics.setFont(Font)
     DevPlayerEnabled = true
-    Fastforward = 0
+    Fastforward = 1
     FastforwardMax = 9
 
     -- if you give the program "player" as a command line argument, you can be a participant in the tournament
@@ -33,6 +34,10 @@ function love.load(args)
 
         if v == "volume" then
             love.audio.setVolume(args[i+1])
+        end
+
+        if v == "skip" then
+            SkipCountdown = true
         end
     end
 
