@@ -13,6 +13,7 @@ function love.load(args)
     SimulationMultiplier = 1
     PlayerlessSimulationMultiplier = 10
     Font = love.graphics.newFont("comicneue.ttf", 40)
+    TreeFont = love.graphics.newFont("comicneue.ttf", 16)
     love.graphics.setFont(Font)
     DevPlayerEnabled = true
 
@@ -172,18 +173,15 @@ function love.draw()
         love.graphics.pop()
     end
 
+    love.graphics.setFont(TreeFont)
     love.graphics.setColor(1, 1, 1)
-    verticalTree = nil
-    if CurrentlyActiveWizards[1].brain.root ~= nil then
+    if CurrentlyActiveWizards[1].brain then
         love.graphics.print(createVerticalTree(CurrentlyActiveWizards[1].brain.root), 50, 500 ,0 , 1)
     end
-    if CurrentlyActiveWizards[2].brain.root ~= nil then
+    if CurrentlyActiveWizards[2].brain then
         love.graphics.print(createVerticalTree(CurrentlyActiveWizards[2].brain.root), 1450, 500 ,0 , 1)
     end
-
-    if verticalTree ~= nil then
-    end
-
+    love.graphics.setFont(Font)
 end
 
 function createVerticalTree(root, indent, verticalTree) -- wizardNum is one or 2, same as index for CurrentlyActiveWizards
