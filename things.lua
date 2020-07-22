@@ -105,7 +105,7 @@ function NewZap(x,y, direction, offset, owner)
         if not self.dieing then
             for i,v in pairs(ThingList) do
                 if v.living and Distance(v.x,v.y, self.x,self.y) <= 30 and v ~= self.owner then
-                    v.health = v.health - 5
+                    v.health = v.health - 10
                     return false
                 end
             end
@@ -235,14 +235,26 @@ function NewSniperShot(x,y, direction, owner)
     self.direction = direction
     self.timer = 0
     self.owner = owner
+    self.trail = {}
 
     love.audio.stop(Sounds.sniper)
     love.audio.play(Sounds.sniper)
 
     local hasHit = {}
+    local accumulator = 0
+    self.trail[#self.trail +1] = self.x
+    self.trail[#self.trail +1] = self.y
     while IsTileWalkable(WorldToTileCoords(self.x,self.y)) do
         self.x = self.x + math.cos(direction)*0.1
         self.y = self.y + math.sin(direction)*0.1
+        accumulator = accumulator + 0.1
+
+        if accumulator > 30 then
+            accumulator = 0
+            local randomness = 16
+            self.trail[#self.trail +1] = self.x + love.math.random()*randomness - randomness/2
+            self.trail[#self.trail +1] = self.y + love.math.random()*randomness - randomness/2 - 14
+        end
 
         for i,v in pairs(ThingList) do
             if not hasHit[v] and v.living and Distance(v.x,v.y, self.x,self.y) <= 30 and v ~= self.owner then
@@ -251,6 +263,9 @@ function NewSniperShot(x,y, direction, owner)
             end
         end
     end
+    local randomness = 16
+    self.trail[#self.trail +1] = self.x + love.math.random()*randomness - randomness/2
+    self.trail[#self.trail +1] = self.y + love.math.random()*randomness - randomness/2 - 14
 
     self.update = function (self, dt)
         self.timer = self.timer + dt
@@ -259,7 +274,7 @@ function NewSniperShot(x,y, direction, owner)
 
     self.draw = function (self)
         love.graphics.setColor(1,0,0.5, Conversion(1,0, 0,0.75,self.timer))
-        love.graphics.line(self.x,self.y -14, self.startx,self.starty -14)
+        love.graphics.line(self.trail)
     end
 
     return self
@@ -324,7 +339,7 @@ function NewHealParticle(x,y)
 
     self.draw = function (self)
         love.graphics.setColor(0.2*self.color,0.8*self.color,0, Conversion(1,0, self.timerMax-0.15,self.timerMax, self.timer))
-        love.graphics.circle("line", self.x,self.y, 10,8)
+        love.graphics.circle("line", self.x,self.y, 10,4)
     end
 
     return self
