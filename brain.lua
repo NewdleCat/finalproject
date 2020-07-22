@@ -259,7 +259,7 @@ function CreateBrainList()
         {
             Subtrees.runAwayFromSnipe,
             Subtrees.runAwayFromDamage,
-            Subtrees.avoidFireDamage,
+            --Subtrees.avoidFireDamage,
         },
 
         {
@@ -322,7 +322,7 @@ function CreateBrainList()
             -- need some way to avoid stalemates here
             Subtrees.peekAroundCorner,
             Subtrees.approachCamper,
-            Subtrees.seekAndFleePattern,
+            --Subtrees.seekAndFleePattern,
         },
 
         --{
@@ -335,10 +335,12 @@ function CreateBrainList()
             Subtrees.runAwayWhenClose,
         },
 
+        --[[
         {
-            Subtrees.seekAndFleePattern,
+            --Subtrees.seekAndFleePattern,
             Subtrees.strafe,
         }
+        ]]
 
         -- research if there are any other good movement patterns
     }
