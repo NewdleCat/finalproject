@@ -120,8 +120,8 @@ function NewStrafeNode()
     self.name = "strafe around enemy"
 
     self.query = function (self, owner, enemy)
-        owner.moveVector[1] = math.cos(owner.direction + math.pi/2)
-        owner.moveVector[2] = math.sin(owner.direction + math.pi/2)
+        owner.moveVector[1] = math.cos(owner.direction + math.pi*owner.strafeDirection/2)
+        owner.moveVector[2] = math.sin(owner.direction + math.pi*owner.strafeDirection/2)
         return true
     end
 

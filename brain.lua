@@ -698,9 +698,7 @@ function CheckLineOfSight(ox,oy, gx,gy)
     local x,y = ox,oy
 
     while IsTileWalkable(WorldToTileCoords(x,y)) do
-        local tx1,ty1 = WorldToTileCoords(x,y)
-        local tx2,ty2 = WorldToTileCoords(gx,gy)
-        if tx1 == tx2 and ty1 == ty2 then
+        if Distance(x,y, gx,gy) <= 32 then
             return true
         end
 

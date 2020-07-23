@@ -21,8 +21,8 @@ function NewWizard(x,y, colorScheme)
     self.enemyDistance = nil
     self.enemyApproaching = 0
     self.fireballAttackFresh = 0
-
     self.colorScheme = colorScheme
+    self.strafeDirection = 1
 
     -- create my legs (just for looks)
     self.legs = {}
@@ -135,16 +135,22 @@ function NewWizard(x,y, colorScheme)
         self.ySpeed = self.ySpeed * friction
 
         -- collide with walls and the edges of the arena
+        local wallCollision = false
         if not IsTileWalkable(WorldToTileCoords(self.x + self.xSpeed, self.y)) then
             self.xSpeed = 0
+            wallCollision = true
         end
         if not IsTileWalkable(WorldToTileCoords(self.x, self.y + self.ySpeed)) then
             self.ySpeed = 0
+            wallCollision = true
         end
         if not IsTileWalkable(WorldToTileCoords(self.x + self.xSpeed, self.y + self.ySpeed)) then
             self.xSpeed = 0
             self.ySpeed = 0
+            wallCollision = true
         end
+
+        if wallCollision then self.strafeDirection = self.strafeDirection * -1 end
 
         -- integrate velocity into position
         self.x = self.x + self.xSpeed
