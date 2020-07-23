@@ -23,6 +23,7 @@ function love.load(args)
     FastforwardMax = 9
     MapFile = "map1"
     ShowPauseMenu = true
+    DevDumbMode = false
 
     -- if you give the program "player" as a command line argument, you can be a participant in the tournament
     love.audio.setVolume(0.2)
@@ -45,6 +46,10 @@ function love.load(args)
 
         if v == "map" then
             MapFile = args[i+1]
+        end
+
+        if v == "dumb" then
+            DevDumbMode = true
         end
     end
 

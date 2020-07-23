@@ -496,8 +496,10 @@ function CreateBrainList()
             end
 
             -- add all of the subtrees in the template in order to the behavior tree
-            for _,subtree in ipairs(template) do
-                table.insert(brain.root.children, subtree)
+            if not DevDumbMode then
+                for _,subtree in ipairs(template) do
+                    table.insert(brain.root.children, subtree)
+                end
             end
 
             -- print the resulting behavior tree to the console so we can see what's happening
