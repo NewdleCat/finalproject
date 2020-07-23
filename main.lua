@@ -238,7 +238,7 @@ function love.draw()
     if MatchStartTime <= 1 then
         text = "Go!"
     end
-    if MatchStartTime > 0 then
+    if MatchStartTime > 0 and not SkipCountdown then
         love.graphics.setFont(CountdownFont)
         local scale = Conversion(1, 0.5/4, 1,0, 1 - ((MatchStartTime%1)^2))
         love.graphics.setColor(0.8, 0.8, 0.8, Conversion(1,0, 0.85,1, 1 - MatchStartTime%1))

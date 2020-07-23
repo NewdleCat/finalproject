@@ -229,7 +229,7 @@ function CreateBrainList()
 
     createSubtree("runAwayFromSnipe", {
         NewIsEnemySnipingNode(),
-        NewTakeCoverNode(),
+        NewTakeCoverNode(true),
     })
 
     createSubtree("strafe", {
@@ -274,8 +274,8 @@ function CreateBrainList()
         },
 
         {
-            Subtrees.runAwayFromSnipe,
             Subtrees.runAwayFromDamage,
+            Subtrees.healInPlace,
         },
 
         -- the option for no damage control
@@ -301,7 +301,6 @@ function CreateBrainList()
 
         {
             Subtrees.fireballInRange,
-            Subtrees.healInPlace,
             Subtrees.zapInRange,
         },
 

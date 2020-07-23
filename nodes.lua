@@ -162,7 +162,7 @@ function NewIsEnemyApproachingNode()
 end
 
 
-function NewTakeCoverNode(showDebug)
+function NewTakeCoverNode(isUrgent, showDebug)
     local self = {}
     self.name = "take cover"
 
@@ -184,6 +184,9 @@ function NewTakeCoverNode(showDebug)
 
                     -- find the best tile that compromises between being close to you and far from the enemy
                     local thisCost = Distance(x,y, ox,oy) - Distance(x,y, gx,gy)
+                    if isUrgent then
+                        thisCost = Distance(x,y, ox,oy)
+                    end
 
                     if not goalCost or thisCost < goalCost then
                         goalCost = thisCost
