@@ -22,6 +22,7 @@ function love.load(args)
     Fastforward = 1
     FastforwardMax = 9
     MapFile = "map1"
+    ShowPauseMenu = true
 
     -- if you give the program "player" as a command line argument, you can be a participant in the tournament
     love.audio.setVolume(0.2)
@@ -156,6 +157,14 @@ function love.keypressed(key)
     -- space toggles pause
     if key == "space" then
         Paused = not Paused
+
+        if Paused then
+            PausedSounds = love.audio.pause()
+        end
+
+        if not Paused then
+            love.audio.play(PausedSounds)
+        end
     end
 
     -- b toggles showing the behavior tree
@@ -173,6 +182,10 @@ function love.keypressed(key)
         else
             Fastforward = math.max(Fastforward - 1, 1)
         end
+    end
+
+    if key == "p" then
+        ShowPauseMenu = not ShowPauseMenu
     end
 
     if key == "r" then
@@ -269,7 +282,7 @@ function love.draw()
     love.graphics.setFont(Font)
 
     -- draw pause screen
-    if Paused then
+    if Paused and ShowPauseMenu then
         love.graphics.setColor(0.8, 0.8, 0.8)
         love.graphics.print("Paused", love.graphics.getWidth()/2 - Font:getWidth("Paused")/2, love.graphics.getHeight()/2 - 200)
 
