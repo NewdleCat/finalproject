@@ -47,6 +47,25 @@ function NextMatch()
         if MatchIndex > #Bracket[RoundIndex] then
             MatchIndex = 1
             RoundIndex = RoundIndex + 1
+            if RoundIndex == 2 then
+                Music.background:stop()
+                
+                Music.trailer:setLooping(true)
+                Music.trailer:setVolume(1)
+                Music.trailer:play()
+            elseif RoundIndex == 3 then
+                Music.trailer:stop()
+                
+                Music.trial:setLooping(true)
+                Music.trial:setVolume(1)
+                Music.trial:play()
+            elseif RoundIndex == 4 then
+                Music.trial:stop()
+                
+                Music.boss:setLooping(true)
+                Music.boss:setVolume(1)
+                Music.boss:play()
+            end
         end
     end
 

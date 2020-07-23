@@ -68,9 +68,21 @@ function love.load(args)
 
         ocean = love.audio.newSource("sounds/ocean2.mp3", "stream"),
     }
+
+    Music = {
+        background = love.audio.newSource("sounds/background.mp3", "stream"),
+        trailer = love.audio.newSource("sounds/trailer.mp3", "stream"),
+        trial = love.audio.newSource("sounds/trial.mp3", "stream"),
+        boss = love.audio.newSource("sounds/boss.mp3", "stream"),
+    }
+
     Sounds.ocean:setLooping(true)
     Sounds.ocean:setVolume(0.5)
     Sounds.ocean:play()
+
+    Music.background:setLooping(true)
+    Music.background:setVolume(1)
+    Music.background:play()
 
     -- load the shader that is used for the ocean
     Timer = 0
@@ -264,7 +276,7 @@ function love.draw()
     love.graphics.setFont(Font)
 
     -- draw pause screen
-    if Paused then
+    if false then
         love.graphics.setColor(0.8, 0.8, 0.8)
         love.graphics.print("Paused", love.graphics.getWidth()/2 - Font:getWidth("Paused")/2, love.graphics.getHeight()/2 - 200)
 
