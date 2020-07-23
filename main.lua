@@ -15,8 +15,9 @@ function love.load(args)
     CountdownFont = love.graphics.newFont("comicneue.ttf", 200)
     Font = love.graphics.newFont("comicneue.ttf", 40)
     TreeFont = love.graphics.newFont("comicneue.ttf", 16)
+    crownImage = love.graphics.newImage("crown.png")
     love.graphics.setFont(Font)
-    DevPlayerEnabled = true
+    DevPlayerEnabled = true -- Change to false for simulation
     Fastforward = 1
     FastforwardMax = 9
     MapFile = "map1"
@@ -95,7 +96,7 @@ function love.load(args)
         }
     ]]
 
-    ROUND_COUNT = 2 -- 2^4 = 16 contestants
+    ROUND_COUNT = 1 -- 2^4 = 16 contestants
     CONTESTANT_COUNT = 2^ROUND_COUNT
     InitializeTournament()
 end
@@ -229,6 +230,9 @@ function love.draw()
         if WinType == TIMEOUT then
             text = "Wizard " .. CurrentlyActiveWizards[WinningWizard].id .. " wins by timeout!"
         end
+        if not CurrentlyActiveWizards[WinningWizard].brain then
+            text = "You win!"
+        end
         local textWidth = Font:getWidth(text)
         love.graphics.print(text, love.graphics.getWidth()/2 - textWidth/2, love.graphics.getHeight()/2 - 150)
     end
@@ -341,6 +345,8 @@ function DrawBracket()
         return nil
     end
 
+    
+
     love.graphics.setColor(0.25,0,0.5, 0.5)
     love.graphics.rectangle("fill", 0,0, love.graphics.getWidth(),love.graphics.getHeight())
 
@@ -398,6 +404,19 @@ function DrawBracket()
 
                 if wizard then
                     DrawWizardIcon(wizard, x,y)
+                end
+
+                if Bracket[ROUND_COUNT + 1][1] and r == ROUND_COUNT + 1 then
+                    local wizardWins = "WIZARD " .. wizard .. " IS THE CHAMPION"
+                    local playerWins = "YOU ARE THE CHAMPION"
+                    love.graphics.setColor(1, 1, 1)
+                     -- - Font:getWidth(v)/2
+                    love.graphics.draw(crownImage, x - 65, y - 135, 0, 1)
+                    if CurrentlyActiveWizards[1].brain ~= nil then
+                        love.graphics.print(wizardWins, x - Font:getWidth(wizardWins)/2, y - 160, 0, 1)
+                    else
+                        love.graphics.print(playerWins, x - Font:getWidth(playerWins)/2, y - 160, 0, 1)
+                    end
                 end
             end
         end
