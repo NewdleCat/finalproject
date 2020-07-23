@@ -8,6 +8,7 @@ require "brain"
 function love.load(args)
     love.math.setRandomSeed(os.time())
     love.window.setMode(1600, 1600*9/16, {vsync=true})
+    love.window.setTitle("CUM: Crowned Ultimate Magician")
     UpdateController = 0
     Paused = false
     ShowBehaviorTree = false
