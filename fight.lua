@@ -51,19 +51,19 @@ function NextMatch()
                 Music.background:stop()
                 
                 Music.trailer:setLooping(true)
-                Music.trailer:setVolume(2)
+                Music.trailer:setVolume(MusicVolume)
                 Music.trailer:play()
             elseif RoundIndex == 3 then
                 Music.trailer:stop()
                 
                 Music.trial:setLooping(true)
-                Music.trial:setVolume(2)
+                Music.trial:setVolume(MusicVolume)
                 Music.trial:play()
             elseif RoundIndex == 4 then
                 Music.trial:stop()
                 
                 Music.boss:setLooping(true)
-                Music.boss:setVolume(2)
+                Music.boss:setVolume(1) -- boss music should be blastin', of course
                 Music.boss:play()
             end
         end

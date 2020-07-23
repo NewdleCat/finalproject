@@ -8,7 +8,7 @@ require "brain"
 function love.load(args)
     love.math.setRandomSeed(os.time())
     love.window.setMode(1600, 1600*9/16, {vsync=true})
-    love.window.setTitle("CUM: Crowned Ultimate Magician")
+    love.window.setTitle("Crowned Ultimate Magician")
     UpdateController = 0
     Paused = false
     ShowBehaviorTree = false
@@ -83,8 +83,9 @@ function love.load(args)
     Sounds.ocean:setVolume(0.5)
     Sounds.ocean:play()
 
+    MusicVolume = 0.65
     Music.background:setLooping(true)
-    Music.background:setVolume(2)
+    Music.background:setVolume(MusicVolume)
     Music.background:play()
 
     -- load the shader that is used for the ocean
