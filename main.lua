@@ -421,8 +421,8 @@ function DrawBracket()
                 end
 
                 if Bracket[ROUND_COUNT + 1][1] and r == ROUND_COUNT + 1 then
-                    local wizardWins = "WIZARD " .. wizard .. " IS THE CHAMPION"
-                    local playerWins = "YOU ARE THE CHAMPION"
+                    local wizardWins = "Wizard " .. wizard .. " is Crowned Ultimate Magician"
+                    local playerWins = "You are Crowned Ultimate Magician!"
                     love.graphics.setColor(1, 1, 1)
                      -- - Font:getWidth(v)/2
                     love.graphics.draw(crownImage, x - 65, y - 135, 0, 1)
