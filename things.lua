@@ -261,7 +261,7 @@ function NewSniperShot(x,y, direction, owner)
 
         for i,v in pairs(ThingList) do
             if not hasHit[v] and v.living and Distance(v.x,v.y, self.x,self.y) <= 30 and v ~= self.owner then
-                v.health = v.health - 75
+                v.health = v.health - 50
                 hasHit[v] = true
             end
         end

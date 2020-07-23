@@ -8,6 +8,7 @@ require "brain"
 function love.load(args)
     love.math.setRandomSeed(os.time())
     love.window.setMode(1600, 1600*9/16, {vsync=true})
+    love.window.setTitle("CUM: Crowned Ultimate Magician")
     UpdateController = 0
     Paused = false
     ShowBehaviorTree = false
@@ -15,11 +16,13 @@ function love.load(args)
     CountdownFont = love.graphics.newFont("comicneue.ttf", 200)
     Font = love.graphics.newFont("comicneue.ttf", 40)
     TreeFont = love.graphics.newFont("comicneue.ttf", 16)
+    crownImage = love.graphics.newImage("crown.png")
     love.graphics.setFont(Font)
-    DevPlayerEnabled = true
+    DevPlayerEnabled = true -- Change to false for simulation
     Fastforward = 1
     FastforwardMax = 9
     MapFile = "map1"
+    ShowPauseMenu = true
 
     -- if you give the program "player" as a command line argument, you can be a participant in the tournament
     love.audio.setVolume(0.2)
@@ -166,6 +169,14 @@ function love.keypressed(key)
     -- space toggles pause
     if key == "space" then
         Paused = not Paused
+
+        if Paused then
+            PausedSounds = love.audio.pause()
+        end
+
+        if not Paused then
+            love.audio.play(PausedSounds)
+        end
     end
 
     -- b toggles showing the behavior tree
@@ -183,6 +194,10 @@ function love.keypressed(key)
         else
             Fastforward = math.max(Fastforward - 1, 1)
         end
+    end
+
+    if key == "p" then
+        ShowPauseMenu = not ShowPauseMenu
     end
 
     if key == "r" then
@@ -241,6 +256,9 @@ function love.draw()
         if WinType == TIMEOUT then
             text = "Wizard " .. CurrentlyActiveWizards[WinningWizard].id .. " wins by timeout!"
         end
+        if not CurrentlyActiveWizards[WinningWizard].brain then
+            text = "You win!"
+        end
         local textWidth = Font:getWidth(text)
         love.graphics.print(text, love.graphics.getWidth()/2 - textWidth/2, love.graphics.getHeight()/2 - 150)
     end
@@ -276,13 +294,13 @@ function love.draw()
     love.graphics.setFont(Font)
 
     -- draw pause screen
-    if false then
+    if Paused and ShowPauseMenu then
         love.graphics.setColor(0.8, 0.8, 0.8)
         love.graphics.print("Paused", love.graphics.getWidth()/2 - Font:getWidth("Paused")/2, love.graphics.getHeight()/2 - 200)
 
         local tips = {
             "B - Display visualized tree",
-            "V - Display vertial tree",
+            "V - Display vertical tree",
             "F - Increase simulation speed",
             "Shift-F - Decrease simulation speed",
         }
@@ -353,6 +371,8 @@ function DrawBracket()
         return nil
     end
 
+
+
     love.graphics.setColor(0.25,0,0.5, 0.5)
     love.graphics.rectangle("fill", 0,0, love.graphics.getWidth(),love.graphics.getHeight())
 
@@ -360,11 +380,11 @@ function DrawBracket()
     local lightLine = {0.8,0.8,0.8}
 
     local xvalues = {}
-    for r=1, ROUND_COUNT do
+    for r=1, ROUND_COUNT + 1 do
         local count = GetContestantsAtLayer(r)
         for i=1, count do
             local x = Conversion(0.1,0.9, 1,count, i)*love.graphics.getWidth()
-            local y = Conversion(0.8,0.2, 1,ROUND_COUNT, r)*love.graphics.getHeight()
+            local y = Conversion(0.8,0.2, 1,ROUND_COUNT + 1, r)*love.graphics.getHeight()
 
             if r == 1 then
                 xvalues[i] = x
@@ -410,6 +430,19 @@ function DrawBracket()
 
                 if wizard then
                     DrawWizardIcon(wizard, x,y)
+                end
+
+                if Bracket[ROUND_COUNT + 1][1] and r == ROUND_COUNT + 1 then
+                    local wizardWins = "WIZARD " .. wizard .. " IS THE CHAMPION"
+                    local playerWins = "YOU ARE THE CHAMPION"
+                    love.graphics.setColor(1, 1, 1)
+                     -- - Font:getWidth(v)/2
+                    love.graphics.draw(crownImage, x - 65, y - 135, 0, 1)
+                    if CurrentlyActiveWizards[1].brain ~= nil then
+                        love.graphics.print(wizardWins, x - Font:getWidth(wizardWins)/2, y - 160, 0, 1)
+                    else
+                        love.graphics.print(playerWins, x - Font:getWidth(playerWins)/2, y - 160, 0, 1)
+                    end
                 end
             end
         end

@@ -12,7 +12,7 @@ function InitializeTournament()
     MatchIndex = 1
 
     -- formatted like Bracket[round][match]
-    for i=1, ROUND_COUNT do
+    for i=1, ROUND_COUNT + 1 do
         Bracket[i] = {}
     end
     for i=1, CONTESTANT_COUNT/2 do
@@ -27,7 +27,7 @@ function MoveWinnerToNextMatch()
     local winner = CurrentlyActiveWizards[WinningWizard]
 
     -- move the winner into the next match
-    if RoundIndex+1 <= ROUND_COUNT then
+    if RoundIndex+1 <= ROUND_COUNT + 1 then
         local nextMatch = math.floor((MatchIndex-1)/2) +1
         if not Bracket[RoundIndex+1][nextMatch] then
             Bracket[RoundIndex+1][nextMatch] = {}
@@ -42,7 +42,7 @@ end
 
 function NextMatch()
     -- move on to the next match
-    if RoundIndex <= ROUND_COUNT then
+    if RoundIndex <= ROUND_COUNT + 1 then
         MatchIndex = MatchIndex + 1
         if MatchIndex > #Bracket[RoundIndex] then
             MatchIndex = 1
