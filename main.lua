@@ -84,7 +84,7 @@ function love.load(args)
     Sounds.ocean:play()
 
     Music.background:setLooping(true)
-    Music.background:setVolume(1)
+    Music.background:setVolume(2)
     Music.background:play()
 
     -- load the shader that is used for the ocean
