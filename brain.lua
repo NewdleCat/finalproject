@@ -26,12 +26,13 @@ function CreateBrainList()
     -- Only pick one snipe
     createSubtree("snipeOnSight", {
         NewLineOfSightNode(),
+        InverterNode(NewWithinRangeNode(6)),
         NewSnipeEnemyNode(),
     })
 
     createSubtree("snipeToKill", {
         NewLineOfSightNode(),
-        InverterNode(NewCheckEnemyHealthNode(75)),
+        InverterNode(NewCheckEnemyHealthNode(50)),
         NewSnipeEnemyNode(),
     })
 

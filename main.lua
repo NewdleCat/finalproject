@@ -8,6 +8,7 @@ require "brain"
 function love.load(args)
     love.math.setRandomSeed(os.time())
     love.window.setMode(1600, 1600*9/16, {vsync=true})
+    love.window.setTitle("CUM: Crowned Ultimate Magician")
     UpdateController = 0
     Paused = false
     ShowBehaviorTree = false
@@ -96,7 +97,7 @@ function love.load(args)
         }
     ]]
 
-    ROUND_COUNT = 1 -- 2^4 = 16 contestants
+    ROUND_COUNT = 4 -- 2^4 = 16 contestants
     CONTESTANT_COUNT = 2^ROUND_COUNT
     InitializeTournament()
 end
@@ -274,7 +275,7 @@ function love.draw()
 
         local tips = {
             "B - Display visualized tree",
-            "V - Display vertial tree",
+            "V - Display vertical tree",
             "F - Increase simulation speed",
             "Shift-F - Decrease simulation speed",
         }
@@ -345,7 +346,7 @@ function DrawBracket()
         return nil
     end
 
-    
+
 
     love.graphics.setColor(0.25,0,0.5, 0.5)
     love.graphics.rectangle("fill", 0,0, love.graphics.getWidth(),love.graphics.getHeight())
