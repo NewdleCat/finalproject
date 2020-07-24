@@ -13,5 +13,5 @@ Download an execulable version here:
 https://groverburger.itch.io/crowned-ultimate-magician
 
 ![Fight 1](action1.gif)
-![Fight 2](action2.gif)
+![Fight 2](action4.gif)
 ![Fight 3](action3.gif)
