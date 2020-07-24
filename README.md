@@ -9,8 +9,9 @@ Created By:
 
 An experiment to procedurally generate AIs using behavior trees using Love2D and Lua
 
-![A Fight](action1.gif)
-![Fights](fights.gif)
-
 Download an execulable version here:
 https://groverburger.itch.io/crowned-ultimate-magician
+
+![Fight 1](action1.gif)
+![Fight 2](action2.gif)
+![Fight 3](action3.gif)
